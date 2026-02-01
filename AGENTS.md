@@ -113,6 +113,16 @@ Follow these guidelines when making changes in this repository.
 - DTOs live under `apps/api/src/<module>/dto`.
 - Keep in-memory stores isolated to service layer (until DB added).
 
+## Domain-Centric Structure (New Rule)
+
+- Organize by domain first (e.g., `auth/`, `wallet/`, `market/`, `orders/`).
+- Keep each domain self-contained: controller/service/dto/types/tests live together.
+- Shared UI and utilities should be easy to find; prefer:
+  - `apps/web/components/*` for truly reusable UI
+  - `apps/web/lib/*` for shared helpers
+- Avoid dumping everything into `components` or `utils`.
+- If a component or helper is domain-specific, keep it inside the domain folder.
+
 ## Frontend Conventions
 
 - Use Tailwind utility classes for styling.
