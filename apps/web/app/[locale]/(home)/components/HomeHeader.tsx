@@ -24,7 +24,7 @@ export const HomeHeader = () => {
   return (
     <header className="flex items-center justify-between gap-6">
       <div className="flex items-center gap-3">
-        <span className="relative inline-flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border border-black/10 bg-white shadow-sm dark:border-white/10 dark:bg-zinc-950">
+        <span className="relative inline-flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border border-[var(--color-border-strong)] bg-[var(--color-surface)] shadow-[0_10px_30px_-20px_rgba(31,94,219,0.35)]">
           <Image
             src="/bito_logo.png"
             alt="Bito"
@@ -34,10 +34,10 @@ export const HomeHeader = () => {
           />
         </span>
         <div>
-          <p className="text-xs uppercase tracking-[0.3em] text-zinc-500 dark:text-zinc-400">
+          <p className="text-xs uppercase tracking-[0.3em] text-[var(--color-text-sub)]">
             {t("header.brand")}
           </p>
-          <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+          <p className="text-sm font-semibold text-[var(--color-text-main)]">
             {t("header.subtitle")}
           </p>
         </div>
@@ -51,20 +51,20 @@ export const HomeHeader = () => {
             id="locale-select"
             value={locale}
             onChange={handleLocaleChange}
-            className="rounded-full border border-black/10 bg-white px-3 py-2 text-sm font-medium text-zinc-800 transition hover:border-black/20 hover:text-zinc-900 dark:border-white/10 dark:bg-zinc-950 dark:text-zinc-100 dark:hover:border-white/20"
+            className="rounded-full border border-[var(--color-border-strong)] bg-[var(--color-surface)] px-3 py-2 text-sm font-medium text-[var(--color-text-main)] transition hover:border-[var(--color-brand-500)]"
           >
             <option value="ko">{t("header.languageKorean")}</option>
             <option value="en">{t("header.languageEnglish")}</option>
           </select>
         </div>
         <Link
-          className="rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-medium text-zinc-800 transition hover:border-black/20 hover:text-zinc-900 dark:border-white/10 dark:bg-zinc-950 dark:text-zinc-100 dark:hover:border-white/20"
+          className="rounded-full border border-[var(--color-border-strong)] bg-[var(--color-surface)] px-4 py-2 text-sm font-medium text-[var(--color-text-main)] transition hover:border-[var(--color-brand-500)]"
           href="/market"
         >
           {t("header.market")}
         </Link>
         <Link
-          className="rounded-full bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
+          className="rounded-full bg-gradient-to-r from-[var(--color-brand-500)] to-[var(--color-brand-700)] px-4 py-2 text-sm font-medium text-white shadow-[0_8px_24px_-12px_rgba(58,141,255,0.8)] transition hover:from-[var(--color-brand-300)] hover:to-[var(--color-brand-500)]"
           href="/login"
         >
           {t("header.login")}

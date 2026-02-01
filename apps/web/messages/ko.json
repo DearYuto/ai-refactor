@@ -1,6 +1,46 @@
 {
   "app": {
-    "title": "Coin Exchange",
-    "tagline": "Simple, fast, and clear trading MVP"
+    "title": "코인 거래소",
+    "tagline": "간결하고 빠른 거래 경험"
+  },
+  "home": {
+    "header": {
+      "brand": "BITO",
+      "subtitle": "Portfolio Overview",
+      "market": "마켓",
+      "login": "로그인",
+      "languageLabel": "언어",
+      "languageEnglish": "영어",
+      "languageKorean": "한국어"
+    },
+    "hero": {
+      "eyebrow": "Daily Snapshot",
+      "title": "Keep every asset in view, without losing the bigger picture.",
+      "description": "잔고와 시장 흐름을 위한 대시보드입니다. 가용 자산을 확인하고 최근 동향을 살펴 의사결정을 하실 수 있습니다.",
+      "primaryCta": "마켓 둘러보기",
+      "secondaryCta": "로그인"
+    },
+    "summary": {
+      "activity": "Activity",
+      "syncing": "동기화 중",
+      "live": "실시간",
+      "loadingTitle": "잔고 불러오는 중",
+      "readyTitle": "잔고가 업데이트되었습니다",
+      "activityDescription": "가용 자산을 확인하고 각 자산의 최신 현황을 살펴보세요.",
+      "sectionTitle": "Summary",
+      "coverageLabel": "Coverage",
+      "coverageTitle": "Multi-asset",
+      "coverageDescription": "모든 마켓의 잔고를 한 곳에서 확인하세요.",
+      "alertsLabel": "Alerts",
+      "alertsTitle": "Subtle signals",
+      "alertsDescription": "불필요한 정보 없이 필요한 것만 받아보세요."
+    },
+    "balance": {
+      "title": "Balance Snapshot",
+      "loadingStatus": "불러오는 중",
+      "updatedStatus": "업데이트됨",
+      "loadingMessage": "잔고를 불러오는 중...",
+      "emptyMessage": "사용 가능한 잔고가 없습니다."
+    }
   }
 }

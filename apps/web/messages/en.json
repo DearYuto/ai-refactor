@@ -1,6 +1,46 @@
 {
   "app": {
-    "title": "Coin Exchange",
+    "title": "BITO",
     "tagline": "Simple, fast, and clear trading MVP"
+  },
+  "home": {
+    "header": {
+      "brand": "Balance Watch",
+      "subtitle": "Portfolio Overview",
+      "market": "Market",
+      "login": "Login",
+      "languageLabel": "Language",
+      "languageEnglish": "English",
+      "languageKorean": "Korean"
+    },
+    "hero": {
+      "eyebrow": "Daily Snapshot",
+      "title": "Keep every asset in view, without losing the bigger picture.",
+      "description": "A calm command center for balances and market context. Track what is available now, scan recent movement, and move with confidence.",
+      "primaryCta": "Explore market",
+      "secondaryCta": "Sign in"
+    },
+    "summary": {
+      "activity": "Activity",
+      "syncing": "Syncing",
+      "live": "Live",
+      "loadingTitle": "Loading balances",
+      "readyTitle": "Balances refreshed",
+      "activityDescription": "Review available funds and see the latest snapshot of each asset.",
+      "sectionTitle": "Summary",
+      "coverageLabel": "Coverage",
+      "coverageTitle": "Multi-asset",
+      "coverageDescription": "Track balances across all markets.",
+      "alertsLabel": "Alerts",
+      "alertsTitle": "Subtle signals",
+      "alertsDescription": "Stay informed without noise."
+    },
+    "balance": {
+      "title": "Balance snapshot",
+      "loadingStatus": "Loading",
+      "updatedStatus": "Updated",
+      "loadingMessage": "Fetching balances...",
+      "emptyMessage": "No balances available."
+    }
   }
 }
