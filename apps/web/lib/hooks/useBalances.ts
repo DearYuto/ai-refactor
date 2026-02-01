@@ -1,6 +1,4 @@
-import { useEffect, useState } from "react";
-
-import { apiBaseUrl } from "@/lib/config";
+import { useWalletControllerGetBalance } from "@/lib/api/generated";
 
 export type BalanceItem = {
   asset: string;
@@ -14,47 +12,14 @@ type BalancesState = {
 };
 
 export const useBalances = (): BalancesState => {
-  const [balances, setBalances] = useState<BalanceItem[] | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, isLoading, error } = useWalletControllerGetBalance();
+  const payload = data?.data as { balances?: BalanceItem[] } | undefined;
+  const balances = payload?.balances ?? null;
+  const message = error
+    ? error instanceof Error
+      ? error.message
+      : "Unable to load balance"
+    : null;
 
-  useEffect(() => {
-    let isActive = true;
-
-    const loadBalances = async () => {
-      try {
-        const response = await fetch(`${apiBaseUrl}/wallet/balance`);
-
-        if (!response.ok) {
-          throw new Error(`Request failed with status ${response.status}`);
-        }
-
-        const data = (await response.json()) as BalanceItem[];
-
-        if (isActive) {
-          setBalances(data);
-          setError(null);
-        }
-      } catch (caught) {
-        if (isActive) {
-          const message =
-            caught instanceof Error ? caught.message : "Unable to load balance";
-          setError(message);
-          setBalances(null);
-        }
-      } finally {
-        if (isActive) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    loadBalances();
-
-    return () => {
-      isActive = false;
-    };
-  }, []);
-
-  return { balances, isLoading, error };
+  return { balances, isLoading, error: message };
 };

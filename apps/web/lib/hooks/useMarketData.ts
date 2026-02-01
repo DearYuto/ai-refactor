@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
-
-import { apiBaseUrl } from "@/lib/config";
+import {
+  useMarketControllerGetOrderbook,
+  useMarketControllerGetTicker,
+} from "@/lib/api/generated";
 
 export type Ticker = {
   symbol: string;
@@ -27,62 +28,18 @@ type MarketDataState = {
 };
 
 export const useMarketData = (): MarketDataState => {
-  const [ticker, setTicker] = useState<Ticker | null>(null);
-  const [orderbook, setOrderbook] = useState<Orderbook | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const tickerQuery = useMarketControllerGetTicker();
+  const orderbookQuery = useMarketControllerGetOrderbook();
+  const isLoading = tickerQuery.isLoading || orderbookQuery.isLoading;
+  const ticker = (tickerQuery.data?.data as Ticker | undefined) ?? null;
+  const orderbook =
+    (orderbookQuery.data?.data as Orderbook | undefined) ?? null;
+  const queryError = tickerQuery.error ?? orderbookQuery.error;
+  const message = queryError
+    ? queryError instanceof Error
+      ? queryError.message
+      : "Unable to load market"
+    : null;
 
-  useEffect(() => {
-    let isActive = true;
-
-    const loadMarket = async () => {
-      try {
-        const [tickerResponse, orderbookResponse] = await Promise.all([
-          fetch(`${apiBaseUrl}/market/ticker`),
-          fetch(`${apiBaseUrl}/market/orderbook`),
-        ]);
-
-        if (!tickerResponse.ok) {
-          throw new Error(
-            `Ticker request failed with status ${tickerResponse.status}`,
-          );
-        }
-
-        if (!orderbookResponse.ok) {
-          throw new Error(
-            `Orderbook request failed with status ${orderbookResponse.status}`,
-          );
-        }
-
-        const tickerData = (await tickerResponse.json()) as Ticker;
-        const orderbookData = (await orderbookResponse.json()) as Orderbook;
-
-        if (isActive) {
-          setTicker(tickerData);
-          setOrderbook(orderbookData);
-          setError(null);
-        }
-      } catch (caught) {
-        if (isActive) {
-          const message =
-            caught instanceof Error ? caught.message : "Unable to load market";
-          setError(message);
-          setTicker(null);
-          setOrderbook(null);
-        }
-      } finally {
-        if (isActive) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    loadMarket();
-
-    return () => {
-      isActive = false;
-    };
-  }, []);
-
-  return { ticker, orderbook, isLoading, error };
+  return { ticker, orderbook, isLoading, error: message };
 };
