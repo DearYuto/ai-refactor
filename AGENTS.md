@@ -82,6 +82,22 @@ Follow these guidelines when making changes in this repository.
 - No `@ts-ignore` or `@ts-expect-error` unless justified in the PR.
 - Use async/await; avoid floating promises (lint warns on this).
 
+### SOLID and Architecture Principles
+
+- Apply the Single Responsibility Principle: each module/class/function should do one job well.
+- Favor composition over inheritance for extensibility.
+- Keep dependencies flowing one direction (types -> services -> controllers).
+- Prioritize reuse through clear boundaries, not shared global utilities.
+- Optimize for DX: readable, discoverable, and low-surprise code.
+- Prefer cohesion within a domain over cross-cutting abstractions.
+- Avoid over-engineering: choose the simplest design that meets current requirements.
+
+### Official Best Practices
+
+- Follow official docs for framework/library usage (Next.js, React, NestJS).
+- React effects: prevent race conditions and duplicate side effects; clean up subscriptions, timeouts, and async tasks in `useEffect`.
+- Avoid effects that derive state; compute derived values during render or with memoization.
+
 ### Architecture and Clean Code
 
 - Keep modules small, cohesive, and dependency-directional (types -> services -> controllers).
