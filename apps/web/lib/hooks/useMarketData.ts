@@ -2,6 +2,7 @@ import { useQuery, type QueryFunctionContext } from "@tanstack/react-query";
 import {
   fetchOrderbook,
   fetchTicker,
+  marketRefresh,
   marketQueryKeys,
   type MarketSource,
   type Orderbook,
@@ -20,13 +21,17 @@ export const useMarketData = (source: MarketSource): MarketDataState => {
   const tickerQuery = useQuery({
     queryKey: marketQueryKeys.ticker(source),
     queryFn: ({ signal }: QueryFunctionContext) => fetchTicker(source, signal),
-    refetchInterval: 3000,
+    refetchInterval: marketRefresh.tickerMs,
+    staleTime: marketRefresh.staleTimeMs,
+    refetchOnWindowFocus: true,
   });
   const orderbookQuery = useQuery({
     queryKey: marketQueryKeys.orderbook(source),
     queryFn: ({ signal }: QueryFunctionContext) =>
       fetchOrderbook(source, signal),
-    refetchInterval: 5000,
+    refetchInterval: marketRefresh.orderbookMs,
+    staleTime: marketRefresh.staleTimeMs,
+    refetchOnWindowFocus: true,
   });
   const isLoading = tickerQuery.isLoading || orderbookQuery.isLoading;
   const ticker = tickerQuery.data ?? null;

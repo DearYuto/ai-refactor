@@ -58,6 +58,13 @@ export const marketQueryKeys = {
   klines: (source: MarketSource) => ["market", "klines", source] as const,
 };
 
+export const marketRefresh = {
+  tickerMs: 3000,
+  orderbookMs: 2000,
+  klinesMs: 5000,
+  staleTimeMs: 1000,
+};
+
 export const fetchTicker = (source: MarketSource, signal?: AbortSignal) => {
   const route =
     source === "BINANCE"

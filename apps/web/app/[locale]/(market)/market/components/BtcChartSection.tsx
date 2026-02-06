@@ -10,6 +10,7 @@ import {
 import { SurfaceCard } from "@/components/SurfaceCard";
 import {
   fetchKlines,
+  marketRefresh,
   marketQueryKeys,
   type MarketSource,
 } from "@/lib/api/market";
@@ -29,7 +30,9 @@ export const BtcChartSection = ({
   const chartQuery = useQuery({
     queryKey: marketQueryKeys.klines(source),
     queryFn: ({ signal }: QueryFunctionContext) => fetchKlines(source, signal),
-    refetchInterval: 5000,
+    refetchInterval: marketRefresh.klinesMs,
+    staleTime: marketRefresh.staleTimeMs,
+    refetchOnWindowFocus: true,
   });
 
   const chartOptions = useMemo(
