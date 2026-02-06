@@ -1,13 +1,12 @@
 import { NextRequest } from "next/server";
-
-const UPBIT_ORDERBOOK_URL = "https://api.upbit.com/v1/orderbook";
+import { UPBIT_ORDERBOOK_BASE_URL } from "@/lib/server/market-endpoints";
 const DEFAULT_MARKET = "KRW-BTC";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const market = (searchParams.get("market") ?? DEFAULT_MARKET).toUpperCase();
 
-  const url = new URL(UPBIT_ORDERBOOK_URL);
+  const url = new URL(UPBIT_ORDERBOOK_BASE_URL);
   url.searchParams.set("markets", market);
 
   try {

@@ -1,4 +1,10 @@
 import { Injectable } from '@nestjs/common';
+import {
+  BINANCE_ORDERBOOK_BASE_URL,
+  BINANCE_TICKER_BASE_URL,
+  UPBIT_ORDERBOOK_BASE_URL,
+  UPBIT_TICKER_BASE_URL,
+} from './market.endpoints';
 
 type MarketSource = 'BINANCE' | 'UPBIT';
 
@@ -80,9 +86,9 @@ export class MarketStreamService {
   }
 
   private async fetchBinanceTicker(): Promise<MarketTicker> {
-    const data = await fetchJson<BinanceTickerResponse>(
-      'https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT',
-    );
+    const url = new URL(BINANCE_TICKER_BASE_URL);
+    url.searchParams.set('symbol', 'BTCUSDT');
+    const data = await fetchJson<BinanceTickerResponse>(url.toString());
 
     return {
       symbol: 'BTC/USDT',
@@ -93,9 +99,10 @@ export class MarketStreamService {
   }
 
   private async fetchBinanceOrderbook(): Promise<MarketOrderbook> {
-    const data = await fetchJson<BinanceOrderbookResponse>(
-      'https://api.binance.com/api/v3/depth?symbol=BTCUSDT&limit=20',
-    );
+    const url = new URL(BINANCE_ORDERBOOK_BASE_URL);
+    url.searchParams.set('symbol', 'BTCUSDT');
+    url.searchParams.set('limit', '20');
+    const data = await fetchJson<BinanceOrderbookResponse>(url.toString());
 
     return {
       bids: data.bids.map(([price, size]) => ({
@@ -110,9 +117,9 @@ export class MarketStreamService {
   }
 
   private async fetchUpbitTicker(): Promise<MarketTicker> {
-    const payload = await fetchJson<UpbitTickerResponse[]>(
-      'https://api.upbit.com/v1/ticker?markets=KRW-BTC',
-    );
+    const url = new URL(UPBIT_TICKER_BASE_URL);
+    url.searchParams.set('markets', 'KRW-BTC');
+    const payload = await fetchJson<UpbitTickerResponse[]>(url.toString());
     const data = payload[0];
 
     return {
@@ -124,9 +131,9 @@ export class MarketStreamService {
   }
 
   private async fetchUpbitOrderbook(): Promise<MarketOrderbook> {
-    const payload = await fetchJson<UpbitOrderbookResponse[]>(
-      'https://api.upbit.com/v1/orderbook?markets=KRW-BTC',
-    );
+    const url = new URL(UPBIT_ORDERBOOK_BASE_URL);
+    url.searchParams.set('markets', 'KRW-BTC');
+    const payload = await fetchJson<UpbitOrderbookResponse[]>(url.toString());
     const data = payload[0];
 
     return {

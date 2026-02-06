@@ -1,13 +1,12 @@
 import { NextRequest } from "next/server";
-
-const BINANCE_TICKER_URL = "https://api.binance.com/api/v3/ticker/24hr";
+import { BINANCE_TICKER_BASE_URL } from "@/lib/server/market-endpoints";
 const DEFAULT_SYMBOL = "BTCUSDT";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const symbol = (searchParams.get("symbol") ?? DEFAULT_SYMBOL).toUpperCase();
 
-  const url = new URL(BINANCE_TICKER_URL);
+  const url = new URL(BINANCE_TICKER_BASE_URL);
   url.searchParams.set("symbol", symbol);
 
   try {

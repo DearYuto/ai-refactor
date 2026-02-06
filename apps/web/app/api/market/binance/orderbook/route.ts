@@ -1,6 +1,5 @@
 import { NextRequest } from "next/server";
-
-const BINANCE_ORDERBOOK_URL = "https://api.binance.com/api/v3/depth";
+import { BINANCE_ORDERBOOK_BASE_URL } from "@/lib/server/market-endpoints";
 const DEFAULT_SYMBOL = "BTCUSDT";
 const DEFAULT_LIMIT = 20;
 
@@ -13,7 +12,7 @@ export async function GET(request: NextRequest) {
     ? Math.min(Math.max(Math.floor(parsedLimit), 5), 100)
     : DEFAULT_LIMIT;
 
-  const url = new URL(BINANCE_ORDERBOOK_URL);
+  const url = new URL(BINANCE_ORDERBOOK_BASE_URL);
   url.searchParams.set("symbol", symbol);
   url.searchParams.set("limit", String(limit));
 

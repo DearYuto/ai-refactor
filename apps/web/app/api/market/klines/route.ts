@@ -1,6 +1,5 @@
 import { NextRequest } from "next/server";
-
-const BINANCE_BASE_URL = "https://api.binance.com/api/v3/klines";
+import { BINANCE_KLINES_BASE_URL } from "@/lib/server/market-endpoints";
 const DEFAULT_SYMBOL = "BTCUSDT";
 const DEFAULT_INTERVAL = "1m";
 const DEFAULT_LIMIT = 200;
@@ -15,7 +14,7 @@ export async function GET(request: NextRequest) {
     ? Math.min(Math.max(Math.floor(parsedLimit), 1), 1000)
     : DEFAULT_LIMIT;
 
-  const url = new URL(BINANCE_BASE_URL);
+  const url = new URL(BINANCE_KLINES_BASE_URL);
   url.searchParams.set("symbol", symbol.toUpperCase());
   url.searchParams.set("interval", interval);
   url.searchParams.set("limit", String(limit));

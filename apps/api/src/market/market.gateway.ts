@@ -31,7 +31,7 @@ export class MarketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   handleConnection(client: Socket) {
     const source: MarketSource = 'BINANCE';
-    client.join(source);
+    void client.join(source);
     this.clientSources.set(client.id, source);
     this.syncIntervals();
   }
@@ -39,7 +39,7 @@ export class MarketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   handleDisconnect(client: Socket) {
     const source = this.clientSources.get(client.id);
     if (source) {
-      client.leave(source);
+      void client.leave(source);
       this.clientSources.delete(client.id);
     }
     this.syncIntervals();
@@ -60,10 +60,10 @@ export class MarketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     if (previous) {
-      client.leave(previous);
+      void client.leave(previous);
     }
 
-    client.join(source);
+    void client.join(source);
     this.clientSources.set(client.id, source);
     this.syncIntervals();
   }

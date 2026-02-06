@@ -1,10 +1,8 @@
 import { NextRequest } from "next/server";
-import {
-  marketIntervalUpbitMinutes,
-  type MarketInterval,
-} from "@/lib/api/market";
+import { marketIntervalUpbitMinutes } from "@/lib/api/market.fetchers";
+import type { MarketInterval } from "@/lib/api/market.types";
+import { UPBIT_CANDLES_BASE_URL } from "@/lib/server/market-endpoints";
 
-const UPBIT_BASE_URL = "https://api.upbit.com/v1/candles/minutes";
 const DEFAULT_MARKET = "KRW-BTC";
 const DEFAULT_COUNT = 200;
 const DEFAULT_INTERVAL: MarketInterval = "1m";
@@ -32,7 +30,7 @@ export async function GET(request: NextRequest) {
     : DEFAULT_COUNT;
 
   const url = new URL(
-    `${UPBIT_BASE_URL}/${marketIntervalUpbitMinutes(interval)}`,
+    `${UPBIT_CANDLES_BASE_URL}/${marketIntervalUpbitMinutes(interval)}`,
   );
   url.searchParams.set("market", market.toUpperCase());
   url.searchParams.set("count", String(count));

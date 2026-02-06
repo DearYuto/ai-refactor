@@ -18,12 +18,19 @@ import {
   fetchKlines,
   fetchTicker,
   marketIntervalSeconds,
+} from "@/lib/api/market.fetchers";
+import {
+  marketQueryDefaults,
   marketRefresh,
   marketQueryKeys,
+} from "@/lib/api/market.query";
+import {
+  MARKET_INTERVALS,
+  MARKET_SOURCE,
   type MarketInterval,
   type MarketSource,
   type Ticker,
-} from "@/lib/api/market";
+} from "@/lib/api/market.types";
 
 type BtcChartSectionProps = {
   source: MarketSource;
@@ -45,8 +52,7 @@ export const BtcChartSection = ({
     queryFn: ({ signal }: QueryFunctionContext) =>
       fetchKlines(source, interval, signal),
     refetchInterval: marketRefresh.klinesMs,
-    staleTime: marketRefresh.staleTimeMs,
-    refetchOnWindowFocus: true,
+    ...marketQueryDefaults,
   });
   const tickerQuery = useQuery<Ticker>({
     queryKey: marketQueryKeys.ticker(source),
@@ -153,7 +159,13 @@ export const BtcChartSection = ({
     seriesRef.current.update(nextBar);
   }, [interval, tickerQuery.data]);
 
-  const intervalOptions: MarketInterval[] = ["1m", "5m", "15m", "1h"];
+  const intervalOptions: MarketInterval[] = [...MARKET_INTERVALS];
+  const sourceOptions = [
+    { value: MARKET_SOURCE.BINANCE, label: "Binance USDT" },
+    { value: MARKET_SOURCE.UPBIT, label: "Upbit KRW" },
+  ] as const;
+  const chartTitle =
+    source === MARKET_SOURCE.BINANCE ? "BTCUSDT Chart" : "KRW-BTC Chart";
 
   return (
     <SurfaceCard className="grid gap-4 p-6">
@@ -163,7 +175,7 @@ export const BtcChartSection = ({
             Bitcoin
           </p>
           <h2 className="mt-1 text-lg font-semibold text-[var(--color-text-main)]">
-            {source === "BINANCE" ? "BTCUSDT Chart" : "KRW-BTC Chart"}
+            {chartTitle}
           </h2>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -184,28 +196,20 @@ export const BtcChartSection = ({
             ))}
           </div>
           <div className="flex items-center gap-2 rounded-full border border-[var(--color-border-soft)] bg-[var(--color-surface-muted)] p-1 text-xs">
-            <button
-              type="button"
-              onClick={() => onSourceChange("BINANCE")}
-              className={`rounded-full px-3 py-1 transition ${
-                source === "BINANCE"
-                  ? "bg-[var(--color-surface)] text-[var(--color-text-main)] shadow-sm"
-                  : "text-[var(--color-text-sub)]"
-              }`}
-            >
-              Binance USDT
-            </button>
-            <button
-              type="button"
-              onClick={() => onSourceChange("UPBIT")}
-              className={`rounded-full px-3 py-1 transition ${
-                source === "UPBIT"
-                  ? "bg-[var(--color-surface)] text-[var(--color-text-main)] shadow-sm"
-                  : "text-[var(--color-text-sub)]"
-              }`}
-            >
-              Upbit KRW
-            </button>
+            {sourceOptions.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => onSourceChange(option.value)}
+                className={`rounded-full px-3 py-1 transition ${
+                  source === option.value
+                    ? "bg-[var(--color-surface)] text-[var(--color-text-main)] shadow-sm"
+                    : "text-[var(--color-text-sub)]"
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
           </div>
         </div>
       </div>

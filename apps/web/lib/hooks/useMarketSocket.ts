@@ -1,12 +1,8 @@
 import { useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { io, type Socket } from "socket.io-client";
-import {
-  marketQueryKeys,
-  type MarketSource,
-  type Orderbook,
-  type Ticker,
-} from "@/lib/api/market";
+import { marketQueryKeys } from "@/lib/api/market.query";
+import type { MarketSource, Orderbook, Ticker } from "@/lib/api/market.types";
 import { apiBaseUrl } from "@/lib/config";
 
 type MarketUpdatePayload = {
