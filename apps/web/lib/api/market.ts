@@ -19,6 +19,8 @@ export type Orderbook = {
 
 export type MarketSource = "BINANCE" | "UPBIT";
 
+export type MarketInterval = "1m" | "5m" | "15m" | "1h";
+
 type BinanceKlineResponse = [
   number,
   string,
@@ -55,7 +57,8 @@ const fetchJson = async <T>(url: string, signal?: AbortSignal): Promise<T> => {
 export const marketQueryKeys = {
   ticker: (source: MarketSource) => ["market", "ticker", source] as const,
   orderbook: (source: MarketSource) => ["market", "orderbook", source] as const,
-  klines: (source: MarketSource) => ["market", "klines", source] as const,
+  klines: (source: MarketSource, interval: MarketInterval) =>
+    ["market", "klines", source, interval] as const,
 };
 
 export const marketRefresh = {
@@ -81,13 +84,44 @@ export const fetchOrderbook = (source: MarketSource, signal?: AbortSignal) => {
   return fetchJson<Orderbook>(route, signal);
 };
 
+export const marketIntervalSeconds = (interval: MarketInterval) => {
+  switch (interval) {
+    case "1m":
+      return 60;
+    case "5m":
+      return 300;
+    case "15m":
+      return 900;
+    case "1h":
+      return 3600;
+    default:
+      return 60;
+  }
+};
+
+export const marketIntervalUpbitMinutes = (interval: MarketInterval) => {
+  switch (interval) {
+    case "1m":
+      return 1;
+    case "5m":
+      return 5;
+    case "15m":
+      return 15;
+    case "1h":
+      return 60;
+    default:
+      return 1;
+  }
+};
+
 export const fetchKlines = async (
   source: MarketSource,
+  interval: MarketInterval,
   signal?: AbortSignal,
 ): Promise<CandlestickData[]> => {
   if (source === "BINANCE") {
     const payload = await fetchJson<BinanceKlineResponse[]>(
-      "/api/market/klines?symbol=BTCUSDT&interval=1m&limit=200",
+      `/api/market/klines?symbol=BTCUSDT&interval=${interval}&limit=200`,
       signal,
     );
 
@@ -101,7 +135,7 @@ export const fetchKlines = async (
   }
 
   const payload = await fetchJson<UpbitCandle[]>(
-    "/api/market/upbit?market=KRW-BTC&count=200",
+    `/api/market/upbit?market=KRW-BTC&count=200&interval=${interval}`,
     signal,
   );
 

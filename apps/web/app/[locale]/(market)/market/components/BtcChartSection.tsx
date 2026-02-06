@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   useQuery,
   useQueryClient,
@@ -17,8 +17,10 @@ import { SurfaceCard } from "@/components/SurfaceCard";
 import {
   fetchKlines,
   fetchTicker,
+  marketIntervalSeconds,
   marketRefresh,
   marketQueryKeys,
+  type MarketInterval,
   type MarketSource,
   type Ticker,
 } from "@/lib/api/market";
@@ -32,14 +34,16 @@ export const BtcChartSection = ({
   source,
   onSourceChange,
 }: BtcChartSectionProps) => {
+  const [interval, setInterval] = useState<MarketInterval>("1m");
   const containerRef = useRef<HTMLDivElement | null>(null);
   const chartRef = useRef<ReturnType<typeof createChart> | null>(null);
   const seriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
   const lastBarRef = useRef<CandlestickData | null>(null);
   const queryClient = useQueryClient();
   const chartQuery = useQuery({
-    queryKey: marketQueryKeys.klines(source),
-    queryFn: ({ signal }: QueryFunctionContext) => fetchKlines(source, signal),
+    queryKey: marketQueryKeys.klines(source, interval),
+    queryFn: ({ signal }: QueryFunctionContext) =>
+      fetchKlines(source, interval, signal),
     refetchInterval: marketRefresh.klinesMs,
     staleTime: marketRefresh.staleTimeMs,
     refetchOnWindowFocus: true,
@@ -116,7 +120,7 @@ export const BtcChartSection = ({
 
   useEffect(() => {
     lastBarRef.current = null;
-  }, [source]);
+  }, [source, interval]);
 
   useEffect(() => {
     if (!seriesRef.current || !tickerQuery.data || !lastBarRef.current) return;
@@ -124,7 +128,9 @@ export const BtcChartSection = ({
     if (!Number.isFinite(latestPrice)) return;
 
     const currentTime = Math.floor(Date.now() / 1000) as UTCTimestamp;
-    const intervalBoundary = (currentTime - (currentTime % 60)) as UTCTimestamp;
+    const intervalSeconds = marketIntervalSeconds(interval);
+    const intervalBoundary = (currentTime -
+      (currentTime % intervalSeconds)) as UTCTimestamp;
     const lastBarTime = Number(lastBarRef.current.time);
     const shouldStartNewBar = lastBarTime < intervalBoundary;
 
@@ -145,7 +151,9 @@ export const BtcChartSection = ({
 
     lastBarRef.current = nextBar;
     seriesRef.current.update(nextBar);
-  }, [tickerQuery.data]);
+  }, [interval, tickerQuery.data]);
+
+  const intervalOptions: MarketInterval[] = ["1m", "5m", "15m", "1h"];
 
   return (
     <SurfaceCard className="grid gap-4 p-6">
@@ -158,29 +166,47 @@ export const BtcChartSection = ({
             {source === "BINANCE" ? "BTCUSDT Chart" : "KRW-BTC Chart"}
           </h2>
         </div>
-        <div className="flex items-center gap-2 rounded-full border border-[var(--color-border-soft)] bg-[var(--color-surface-muted)] p-1 text-xs">
-          <button
-            type="button"
-            onClick={() => onSourceChange("BINANCE")}
-            className={`rounded-full px-3 py-1 transition ${
-              source === "BINANCE"
-                ? "bg-[var(--color-surface)] text-[var(--color-text-main)] shadow-sm"
-                : "text-[var(--color-text-sub)]"
-            }`}
-          >
-            Binance USDT
-          </button>
-          <button
-            type="button"
-            onClick={() => onSourceChange("UPBIT")}
-            className={`rounded-full px-3 py-1 transition ${
-              source === "UPBIT"
-                ? "bg-[var(--color-surface)] text-[var(--color-text-main)] shadow-sm"
-                : "text-[var(--color-text-sub)]"
-            }`}
-          >
-            Upbit KRW
-          </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-1 rounded-full border border-[var(--color-border-soft)] bg-[var(--color-surface-muted)] p-1 text-xs">
+            {intervalOptions.map((option) => (
+              <button
+                key={option}
+                type="button"
+                onClick={() => setInterval(option)}
+                className={`rounded-full px-3 py-1 transition ${
+                  interval === option
+                    ? "bg-[var(--color-surface)] text-[var(--color-text-main)] shadow-sm"
+                    : "text-[var(--color-text-sub)]"
+                }`}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-2 rounded-full border border-[var(--color-border-soft)] bg-[var(--color-surface-muted)] p-1 text-xs">
+            <button
+              type="button"
+              onClick={() => onSourceChange("BINANCE")}
+              className={`rounded-full px-3 py-1 transition ${
+                source === "BINANCE"
+                  ? "bg-[var(--color-surface)] text-[var(--color-text-main)] shadow-sm"
+                  : "text-[var(--color-text-sub)]"
+              }`}
+            >
+              Binance USDT
+            </button>
+            <button
+              type="button"
+              onClick={() => onSourceChange("UPBIT")}
+              className={`rounded-full px-3 py-1 transition ${
+                source === "UPBIT"
+                  ? "bg-[var(--color-surface)] text-[var(--color-text-main)] shadow-sm"
+                  : "text-[var(--color-text-sub)]"
+              }`}
+            >
+              Upbit KRW
+            </button>
+          </div>
         </div>
       </div>
 
