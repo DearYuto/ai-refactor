@@ -147,6 +147,7 @@ Follow these guidelines when making changes in this repository.
 - State: use `zustand` for client state, `@tanstack/react-query` for server state.
 - i18n: use `next-intl` for locale messages and formatting.
 - UI: use `@headlessui/react` for accessible, unstyled primitives when needed.
+- Component file naming: use kebab-case filenames. For modal content components use `modal-contents.tsx` (not `ModalContents.tsx`).
 
 ## Files to Avoid Committing
 
