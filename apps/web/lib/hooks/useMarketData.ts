@@ -21,7 +21,7 @@ export const useMarketData = (source: MarketSource): MarketDataState => {
   const tickerQuery = useQuery({
     queryKey: marketQueryKeys.ticker(source),
     queryFn: ({ signal }: QueryFunctionContext) => fetchTicker(source, signal),
-    refetchInterval: marketRefresh.tickerMs,
+    refetchInterval: false,
     staleTime: marketRefresh.staleTimeMs,
     refetchOnWindowFocus: true,
   });
@@ -29,7 +29,7 @@ export const useMarketData = (source: MarketSource): MarketDataState => {
     queryKey: marketQueryKeys.orderbook(source),
     queryFn: ({ signal }: QueryFunctionContext) =>
       fetchOrderbook(source, signal),
-    refetchInterval: marketRefresh.orderbookMs,
+    refetchInterval: false,
     staleTime: marketRefresh.staleTimeMs,
     refetchOnWindowFocus: true,
   });

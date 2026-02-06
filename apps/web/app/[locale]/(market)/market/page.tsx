@@ -9,11 +9,14 @@ import { TickerSection } from "@/app/[locale]/(market)/market/components/TickerS
 import { PageShell } from "@/components/PageShell";
 import { type MarketSource } from "@/lib/api/market";
 import { useMarketData } from "@/lib/hooks/useMarketData";
+import { useMarketSocket } from "@/lib/hooks/useMarketSocket";
 
 export default function MarketPage() {
   const [source, setSource] = useState<MarketSource>("BINANCE");
   const { ticker, orderbook, isLoading, error, lastUpdated } =
     useMarketData(source);
+
+  useMarketSocket(source);
 
   return (
     <PageShell>
