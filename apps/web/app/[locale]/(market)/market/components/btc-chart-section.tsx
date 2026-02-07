@@ -9,6 +9,7 @@ import {
 import {
   createChart,
   CandlestickSeries,
+  HistogramSeries,
   type CandlestickData,
   type ISeriesApi,
   type UTCTimestamp,
@@ -18,6 +19,7 @@ import {
   fetchKlines,
   fetchTicker,
   marketIntervalSeconds,
+  type KlinesData,
 } from "@/lib/api/market.fetchers";
 import {
   marketQueryDefaults,
@@ -45,9 +47,10 @@ export const BtcChartSection = ({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const chartRef = useRef<ReturnType<typeof createChart> | null>(null);
   const seriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
+  const volumeSeriesRef = useRef<ISeriesApi<"Histogram"> | null>(null);
   const lastBarRef = useRef<CandlestickData | null>(null);
   const queryClient = useQueryClient();
-  const chartQuery = useQuery({
+  const chartQuery = useQuery<KlinesData>({
     queryKey: marketQueryKeys.klines(source, interval),
     queryFn: ({ signal }: QueryFunctionContext) =>
       fetchKlines(source, interval, signal),
@@ -99,8 +102,17 @@ export const BtcChartSection = ({
       wickDownColor: "#f43f5e",
     });
 
+    const volumeSeries = chart.addSeries(HistogramSeries, {
+      priceFormat: { type: "volume" },
+      priceScaleId: "volume",
+    });
+    chart.priceScale("volume").applyOptions({
+      scaleMargins: { top: 0.8, bottom: 0 },
+    });
+
     chartRef.current = chart;
     seriesRef.current = series;
+    volumeSeriesRef.current = volumeSeries;
     const resizeObserver = new ResizeObserver((entries) => {
       const entry = entries[0];
       if (!entry) return;
@@ -114,13 +126,16 @@ export const BtcChartSection = ({
       chart.remove();
       chartRef.current = null;
       seriesRef.current = null;
+      volumeSeriesRef.current = null;
     };
   }, [chartOptions]);
 
   useEffect(() => {
-    if (!seriesRef.current || !chartQuery.data?.length) return;
-    seriesRef.current.setData(chartQuery.data);
-    lastBarRef.current = chartQuery.data[chartQuery.data.length - 1] ?? null;
+    if (!seriesRef.current || !chartQuery.data) return;
+    seriesRef.current.setData(chartQuery.data.candles);
+    volumeSeriesRef.current?.setData(chartQuery.data.volumes);
+    lastBarRef.current =
+      chartQuery.data.candles[chartQuery.data.candles.length - 1] ?? null;
     chartRef.current?.timeScale().fitContent();
   }, [chartQuery.data]);
 

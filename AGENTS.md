@@ -111,6 +111,7 @@ Follow these guidelines when making changes in this repository.
 
 - Root formatting uses Prettier (`bun run format`).
 - ESLint is the source of truth for code-style warnings.
+- Prefer array destructuring over numeric index access when mapping arrays (for readability).
 
 ### Imports
 

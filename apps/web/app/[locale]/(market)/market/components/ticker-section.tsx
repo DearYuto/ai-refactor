@@ -1,20 +1,19 @@
-import type { Ticker } from "@/lib/hooks/useMarketData";
-import { formatNumeric } from "@repo/utils";
+import type { MarketSource, Ticker } from "@/lib/api/market.types";
+import { formatPercent, formatPrice, formatVolume } from "@/lib/format/market";
 import { SurfaceCard } from "@/components/surface-card";
-
-const formatValue = (value: string | number) =>
-  formatNumeric(value, { maximumFractionDigits: 8 });
 
 type TickerSectionProps = {
   ticker: Ticker | null;
   isLoading: boolean;
   error: string | null;
+  source: MarketSource;
 };
 
 export const TickerSection = ({
   ticker,
   isLoading,
   error,
+  source,
 }: TickerSectionProps) => (
   <SurfaceCard className="grid gap-6 p-6">
     <div className="flex items-center justify-between">
@@ -36,7 +35,7 @@ export const TickerSection = ({
             Price
           </p>
           <p className="mt-2 text-lg font-semibold text-[var(--color-text-main)]">
-            {formatValue(ticker.price)}
+            {formatPrice(ticker.price, source)}
           </p>
         </div>
         <div className="rounded-2xl border border-[var(--color-border-soft)] bg-[var(--color-surface-muted)] px-4 py-3">
@@ -44,7 +43,7 @@ export const TickerSection = ({
             24h Change
           </p>
           <p className="mt-2 text-lg font-semibold text-[var(--color-text-main)]">
-            {formatValue(ticker.change24h)}
+            {formatPercent(ticker.change24h)}
           </p>
         </div>
         <div className="rounded-2xl border border-[var(--color-border-soft)] bg-[var(--color-surface-muted)] px-4 py-3">
@@ -52,7 +51,7 @@ export const TickerSection = ({
             24h Volume
           </p>
           <p className="mt-2 text-lg font-semibold text-[var(--color-text-main)]">
-            {formatValue(ticker.volume24h)}
+            {formatVolume(ticker.volume24h, source)}
           </p>
         </div>
         <div className="rounded-2xl border border-[var(--color-border-soft)] bg-[var(--color-surface-muted)] px-4 py-3">

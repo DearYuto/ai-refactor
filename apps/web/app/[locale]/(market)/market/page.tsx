@@ -36,14 +36,21 @@ export default function MarketPage() {
           isLoading={isLoading}
           error={error}
           lastUpdated={lastUpdated}
+          source={source}
         />
 
-        <TickerSection ticker={ticker} isLoading={isLoading} error={error} />
+        <TickerSection
+          ticker={ticker}
+          isLoading={isLoading}
+          error={error}
+          source={source}
+        />
 
         <OrderbookSection
           orderbook={orderbook}
           isLoading={isLoading}
           error={error}
+          source={source}
         />
       </main>
     </PageShell>

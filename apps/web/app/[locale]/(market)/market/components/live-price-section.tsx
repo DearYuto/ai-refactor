@@ -1,15 +1,13 @@
-import type { Ticker } from "@/lib/hooks/useMarketData";
+import type { MarketSource, Ticker } from "@/lib/api/market.types";
 import { SurfaceCard } from "@/components/surface-card";
-import { formatNumeric } from "@repo/utils";
-
-const formatValue = (value: string | number) =>
-  formatNumeric(value, { maximumFractionDigits: 8 });
+import { formatPercent, formatPrice, formatVolume } from "@/lib/format/market";
 
 type LivePriceSectionProps = {
   ticker: Ticker | null;
   isLoading: boolean;
   error: string | null;
   lastUpdated: number | null;
+  source: MarketSource;
 };
 
 const formatTime = (timestamp: number) =>
@@ -24,6 +22,7 @@ export const LivePriceSection = ({
   isLoading,
   error,
   lastUpdated,
+  source,
 }: LivePriceSectionProps) => {
   const changeValue = ticker ? Number(ticker.change24h) : null;
   const hasChangeValue = changeValue !== null && !Number.isNaN(changeValue);
@@ -60,10 +59,10 @@ export const LivePriceSection = ({
               {ticker.symbol}
             </p>
             <p className="mt-3 text-4xl font-semibold text-[var(--color-text-main)]">
-              {formatValue(ticker.price)}
+              {formatPrice(ticker.price, source)}
             </p>
             <p className={`mt-2 text-sm font-medium ${changeClass}`}>
-              {formatValue(ticker.change24h)} 24h
+              {formatPercent(ticker.change24h)} 24h
             </p>
           </div>
           <div className="grid gap-4">
@@ -72,7 +71,7 @@ export const LivePriceSection = ({
                 24h Volume
               </p>
               <p className="mt-2 text-lg font-semibold text-[var(--color-text-main)]">
-                {formatValue(ticker.volume24h)}
+                {formatVolume(ticker.volume24h, source)}
               </p>
             </div>
             <div className="rounded-2xl border border-[var(--color-border-soft)] bg-[var(--color-surface-muted)] px-4 py-4">

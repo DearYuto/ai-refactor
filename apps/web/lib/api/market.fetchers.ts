@@ -1,4 +1,8 @@
-import type { CandlestickData, UTCTimestamp } from "lightweight-charts";
+import type {
+  CandlestickData,
+  HistogramData,
+  UTCTimestamp,
+} from "lightweight-charts";
 import {
   buildKlinesRoute,
   buildOrderbookRoute,
@@ -34,6 +38,7 @@ type UpbitCandle = {
   low_price: number;
   trade_price: number;
   timestamp: number;
+  candle_acc_trade_volume: number;
 };
 
 const fetchJson = async <T>(url: string, signal?: AbortSignal): Promise<T> => {
@@ -84,11 +89,16 @@ export const marketIntervalUpbitMinutes = (interval: MarketInterval) => {
   }
 };
 
+export type KlinesData = {
+  candles: CandlestickData[];
+  volumes: HistogramData[];
+};
+
 export const fetchKlines = async (
   source: MarketSource,
   interval: MarketInterval,
   signal?: AbortSignal,
-): Promise<CandlestickData[]> => {
+): Promise<KlinesData> => {
   if (source === MARKET_SOURCE.BINANCE) {
     const route = buildKlinesRoute({
       symbol: "BTCUSDT",
@@ -97,13 +107,27 @@ export const fetchKlines = async (
     });
     const payload = await fetchJson<BinanceKlineResponse[]>(route, signal);
 
-    return payload.map((item) => ({
-      time: Math.floor(item[0] / 1000) as UTCTimestamp,
-      open: Number(item[1]),
-      high: Number(item[2]),
-      low: Number(item[3]),
-      close: Number(item[4]),
-    }));
+    const candles = payload.map((item) => {
+      const [openTime, open, high, low, close] = item;
+      return {
+        time: Math.floor(openTime / 1000) as UTCTimestamp,
+        open: Number(open),
+        high: Number(high),
+        low: Number(low),
+        close: Number(close),
+      };
+    });
+
+    const volumes = payload.map((item) => {
+      const [openTime, open, , , close, volume] = item;
+      return {
+        time: Math.floor(openTime / 1000) as UTCTimestamp,
+        value: Number(volume),
+        color: Number(close) >= Number(open) ? "#22c55e" : "#f43f5e",
+      };
+    });
+
+    return { candles, volumes };
   }
 
   const payload = await fetchJson<UpbitCandle[]>(
@@ -115,13 +139,20 @@ export const fetchKlines = async (
     signal,
   );
 
-  return payload
-    .map((item) => ({
-      time: Math.floor(item.timestamp / 1000) as UTCTimestamp,
-      open: item.opening_price,
-      high: item.high_price,
-      low: item.low_price,
-      close: item.trade_price,
-    }))
-    .reverse();
+  const reversed = [...payload].reverse();
+  const candles = reversed.map((item) => ({
+    time: Math.floor(item.timestamp / 1000) as UTCTimestamp,
+    open: item.opening_price,
+    high: item.high_price,
+    low: item.low_price,
+    close: item.trade_price,
+  }));
+
+  const volumes = reversed.map((item) => ({
+    time: Math.floor(item.timestamp / 1000) as UTCTimestamp,
+    value: item.candle_acc_trade_volume,
+    color: item.trade_price >= item.opening_price ? "#22c55e" : "#f43f5e",
+  }));
+
+  return { candles, volumes };
 };

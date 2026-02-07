@@ -1,20 +1,19 @@
-import type { Orderbook } from "@/lib/hooks/useMarketData";
-import { formatNumeric } from "@repo/utils";
+import type { MarketSource, Orderbook } from "@/lib/api/market.types";
+import { formatPrice, formatSize } from "@/lib/format/market";
 import { SurfaceCard } from "@/components/surface-card";
-
-const formatValue = (value: string | number) =>
-  formatNumeric(value, { maximumFractionDigits: 8 });
 
 type OrderbookSectionProps = {
   orderbook: Orderbook | null;
   isLoading: boolean;
   error: string | null;
+  source: MarketSource;
 };
 
 export const OrderbookSection = ({
   orderbook,
   isLoading,
   error,
+  source,
 }: OrderbookSectionProps) => (
   <section className="grid gap-6 lg:grid-cols-2">
     <SurfaceCard className="rounded-2xl p-6">
@@ -37,10 +36,10 @@ export const OrderbookSection = ({
           {orderbook.bids.map((bid, index) => (
             <li key={`bid-${index}`} className="flex justify-between">
               <span className="text-[var(--color-text-main)]">
-                {formatValue(bid.price)}
+                {formatPrice(bid.price, source)}
               </span>
               <span className="text-[var(--color-text-sub)]">
-                {formatValue(bid.size)}
+                {formatSize(bid.size)}
               </span>
             </li>
           ))}
@@ -72,10 +71,10 @@ export const OrderbookSection = ({
           {orderbook.asks.map((ask, index) => (
             <li key={`ask-${index}`} className="flex justify-between">
               <span className="text-[var(--color-text-main)]">
-                {formatValue(ask.price)}
+                {formatPrice(ask.price, source)}
               </span>
               <span className="text-[var(--color-text-sub)]">
-                {formatValue(ask.size)}
+                {formatSize(ask.size)}
               </span>
             </li>
           ))}
