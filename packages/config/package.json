@@ -1,5 +1,7 @@
 {
   "name": "@repo/config",
   "version": "0.0.0",
-  "private": true
+  "private": true,
+  "main": "./index.ts",
+  "types": "./index.ts"
 }

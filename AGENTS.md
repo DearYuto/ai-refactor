@@ -149,6 +149,7 @@ Follow these guidelines when making changes in this repository.
 - i18n: use `next-intl` for locale messages and formatting.
 - UI: use `@headlessui/react` for accessible, unstyled primitives when needed.
 - Component file naming: use kebab-case filenames. For modal content components use `modal-contents.tsx` (not `ModalContents.tsx`).
+- Tailwind: use shared preset from `@repo/config` (default to `tailwindPresetV1`) and avoid breaking changes within a version.
 
 ## Files to Avoid Committing
 
