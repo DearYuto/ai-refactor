@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { io, type Socket } from "socket.io-client";
 import { marketQueryKeys } from "@/lib/api/market.query";
@@ -12,10 +12,13 @@ type MarketUpdatePayload = {
   ts: number;
 };
 
+type MarketSocketStatus = "connected" | "disconnected" | "connecting";
+
 export const useMarketSocket = (source: MarketSource) => {
   const queryClient = useQueryClient();
   const socketRef = useRef<Socket | null>(null);
   const sourceRef = useRef<MarketSource>(source);
+  const [status, setStatus] = useState<MarketSocketStatus>("connecting");
 
   useEffect(() => {
     sourceRef.current = source;
@@ -37,14 +40,21 @@ export const useMarketSocket = (source: MarketSource) => {
     };
 
     const handleConnect = () => {
+      setStatus("connected");
       socket.emit("market:source", sourceRef.current);
     };
 
+    const handleDisconnect = () => {
+      setStatus("disconnected");
+    };
+
     socket.on("connect", handleConnect);
+    socket.on("disconnect", handleDisconnect);
     socket.on("market:update", handleUpdate);
 
     return () => {
       socket.off("connect", handleConnect);
+      socket.off("disconnect", handleDisconnect);
       socket.off("market:update", handleUpdate);
       socket.disconnect();
       socketRef.current = null;
@@ -58,4 +68,6 @@ export const useMarketSocket = (source: MarketSource) => {
     }
     socket.emit("market:source", source);
   }, [source]);
+
+  return status;
 };

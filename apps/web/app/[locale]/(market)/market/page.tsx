@@ -13,10 +13,12 @@ import { useMarketSocket } from "@/lib/hooks/useMarketSocket";
 
 export default function MarketPage() {
   const [source, setSource] = useState<MarketSource>(MARKET_SOURCE.BINANCE);
-  const { ticker, orderbook, isLoading, error, lastUpdated } =
-    useMarketData(source);
-
-  useMarketSocket(source);
+  const socketStatus = useMarketSocket(source);
+  const enablePolling = socketStatus !== "connected";
+  const { ticker, orderbook, isLoading, error, lastUpdated } = useMarketData(
+    source,
+    enablePolling,
+  );
 
   return (
     <PageShell>
@@ -24,6 +26,7 @@ export default function MarketPage() {
         <MarketHeader
           title={ticker?.symbol ?? "Market Overview"}
           isLoading={isLoading}
+          socketStatus={socketStatus}
         />
 
         <BtcChartSection source={source} onSourceChange={setSource} />

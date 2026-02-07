@@ -1,6 +1,10 @@
 import { useQuery, type QueryFunctionContext } from "@tanstack/react-query";
 import { fetchOrderbook, fetchTicker } from "@/lib/api/market.fetchers";
-import { marketQueryDefaults, marketQueryKeys } from "@/lib/api/market.query";
+import {
+  marketQueryDefaults,
+  marketQueryKeys,
+  marketRefresh,
+} from "@/lib/api/market.query";
 import type { MarketSource, Orderbook, Ticker } from "@/lib/api/market.types";
 
 type MarketDataState = {
@@ -11,18 +15,21 @@ type MarketDataState = {
   lastUpdated: number | null;
 };
 
-export const useMarketData = (source: MarketSource): MarketDataState => {
+export const useMarketData = (
+  source: MarketSource,
+  enablePolling: boolean,
+): MarketDataState => {
   const tickerQuery = useQuery({
     queryKey: marketQueryKeys.ticker(source),
     queryFn: ({ signal }: QueryFunctionContext) => fetchTicker(source, signal),
-    refetchInterval: false,
+    refetchInterval: enablePolling ? marketRefresh.tickerMs : false,
     ...marketQueryDefaults,
   });
   const orderbookQuery = useQuery({
     queryKey: marketQueryKeys.orderbook(source),
     queryFn: ({ signal }: QueryFunctionContext) =>
       fetchOrderbook(source, signal),
-    refetchInterval: false,
+    refetchInterval: enablePolling ? marketRefresh.orderbookMs : false,
     ...marketQueryDefaults,
   });
   const isLoading = tickerQuery.isLoading || orderbookQuery.isLoading;
