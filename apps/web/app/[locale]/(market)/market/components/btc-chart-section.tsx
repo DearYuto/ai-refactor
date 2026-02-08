@@ -14,7 +14,7 @@ import {
   type ISeriesApi,
   type UTCTimestamp,
 } from "lightweight-charts";
-import { SurfaceCard } from "@/components/surface-card";
+import { SurfaceCard } from "@/components/ui/surface-card";
 import {
   fetchKlines,
   fetchTicker,

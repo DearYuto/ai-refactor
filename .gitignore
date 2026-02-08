@@ -52,8 +52,15 @@ yarn-error.log*
 # opencode
 .opencode/
 
+# omc
+.omc/
+
 # vercel
 .vercel
+
+# playwright
+**/test-results/
+**/playwright-report/
 
 # typescript
 *.tsbuildinfo

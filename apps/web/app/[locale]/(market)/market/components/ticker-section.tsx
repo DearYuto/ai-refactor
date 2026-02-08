@@ -1,6 +1,6 @@
 import type { MarketSource, Ticker } from "@/lib/api/market.types";
 import { formatPercent, formatPrice, formatVolume } from "@/lib/format/market";
-import { SurfaceCard } from "@/components/surface-card";
+import { SurfaceCard } from "@/components/ui/surface-card";
 
 type TickerSectionProps = {
   ticker: Ticker | null;

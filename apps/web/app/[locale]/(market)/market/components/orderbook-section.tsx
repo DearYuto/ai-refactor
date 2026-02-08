@@ -1,6 +1,6 @@
 import type { MarketSource, Orderbook } from "@/lib/api/market.types";
 import { formatPrice, formatSize } from "@/lib/format/market";
-import { SurfaceCard } from "@/components/surface-card";
+import { SurfaceCard } from "@/components/ui/surface-card";
 
 type OrderbookSectionProps = {
   orderbook: Orderbook | null;
