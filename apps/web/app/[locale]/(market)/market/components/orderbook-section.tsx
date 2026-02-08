@@ -58,13 +58,18 @@ export const OrderbookSection = ({
               {bids.map((bid, index) => {
                 const depth = bidTotals[index] ?? 0;
                 const width = `${Math.min((depth / maxDepth) * 100, 100)}%`;
+                const isTop = index === 0;
                 return (
                   <li
                     key={`bid-${index}`}
-                    className="relative flex items-center justify-between overflow-hidden rounded-xl px-3 py-2"
+                    className={`relative flex items-center justify-between overflow-hidden rounded-xl px-3 py-2 ${
+                      isTop ? "ring-1 ring-emerald-400/60" : ""
+                    }`}
                   >
                     <span
-                      className="absolute inset-y-0 right-0 bg-emerald-500/10"
+                      className={`absolute inset-y-0 right-0 ${
+                        isTop ? "bg-emerald-500/20" : "bg-emerald-500/10"
+                      }`}
                       style={{ width }}
                     />
                     <span className="relative text-[var(--color-text-main)]">
@@ -104,13 +109,18 @@ export const OrderbookSection = ({
               {asks.map((ask, index) => {
                 const depth = askTotals[index] ?? 0;
                 const width = `${Math.min((depth / maxDepth) * 100, 100)}%`;
+                const isTop = index === 0;
                 return (
                   <li
                     key={`ask-${index}`}
-                    className="relative flex items-center justify-between overflow-hidden rounded-xl px-3 py-2"
+                    className={`relative flex items-center justify-between overflow-hidden rounded-xl px-3 py-2 ${
+                      isTop ? "ring-1 ring-rose-400/60" : ""
+                    }`}
                   >
                     <span
-                      className="absolute inset-y-0 left-0 bg-rose-500/10"
+                      className={`absolute inset-y-0 left-0 ${
+                        isTop ? "bg-rose-500/20" : "bg-rose-500/10"
+                      }`}
                       style={{ width }}
                     />
                     <span className="relative text-[var(--color-text-main)]">
