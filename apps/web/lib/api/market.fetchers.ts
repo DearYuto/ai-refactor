@@ -14,8 +14,13 @@ import {
   type MarketInterval,
   type MarketSource,
   type Orderbook,
+  type Trade,
   type Ticker,
 } from "@/lib/api/market.types";
+import {
+  buildTradesRoute,
+  buildUpbitTradesRoute,
+} from "@/lib/api/market-routes";
 
 type BinanceKlineResponse = [
   number,
@@ -41,6 +46,22 @@ type UpbitCandle = {
   candle_acc_trade_volume: number;
 };
 
+type BinanceTradeResponse = {
+  id: number;
+  price: string;
+  qty: string;
+  time: number;
+  isBuyerMaker: boolean;
+};
+
+type UpbitTradeResponse = {
+  trade_price: number;
+  trade_volume: number;
+  trade_timestamp: number;
+  ask_bid: "ASK" | "BID";
+  sequential_id: number;
+};
+
 const fetchJson = async <T>(url: string, signal?: AbortSignal): Promise<T> => {
   const response = await fetch(url, { signal });
 
@@ -57,6 +78,39 @@ export const fetchTicker = (source: MarketSource, signal?: AbortSignal) => {
 
 export const fetchOrderbook = (source: MarketSource, signal?: AbortSignal) => {
   return fetchJson<Orderbook>(buildOrderbookRoute(source), signal);
+};
+
+export const fetchTrades = async (
+  source: MarketSource,
+  signal?: AbortSignal,
+): Promise<Trade[]> => {
+  if (source === MARKET_SOURCE.BINANCE) {
+    const payload = await fetchJson<BinanceTradeResponse[]>(
+      buildTradesRoute({ symbol: "BTCUSDT", limit: 50 }),
+      signal,
+    );
+
+    return payload.map((trade) => ({
+      id: String(trade.id),
+      price: Number(trade.price),
+      size: Number(trade.qty),
+      side: trade.isBuyerMaker ? "sell" : "buy",
+      timestamp: trade.time,
+    }));
+  }
+
+  const payload = await fetchJson<UpbitTradeResponse[]>(
+    buildUpbitTradesRoute({ market: "KRW-BTC", count: 50 }),
+    signal,
+  );
+
+  return payload.map((trade) => ({
+    id: String(trade.sequential_id),
+    price: trade.trade_price,
+    size: trade.trade_volume,
+    side: trade.ask_bid === "ASK" ? "sell" : "buy",
+    timestamp: trade.trade_timestamp,
+  }));
 };
 
 export const marketIntervalSeconds = (interval: MarketInterval) => {
