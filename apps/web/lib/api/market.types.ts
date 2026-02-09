@@ -25,3 +25,13 @@ export type MarketSource = (typeof MARKET_SOURCE)[keyof typeof MARKET_SOURCE];
 export const MARKET_INTERVALS = ["1m", "5m", "15m", "1h"] as const;
 
 export type MarketInterval = (typeof MARKET_INTERVALS)[number];
+
+export type TradeSide = "buy" | "sell";
+
+export type Trade = {
+  id: string;
+  price: number;
+  size: number;
+  side: TradeSide;
+  timestamp: number;
+};
