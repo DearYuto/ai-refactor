@@ -7,5 +7,6 @@ import { MarketStreamService } from './market.stream.service';
 @Module({
   controllers: [MarketController],
   providers: [MarketService, MarketStreamService, MarketGateway],
+  exports: [MarketStreamService],
 })
 export class MarketModule {}
