@@ -14,6 +14,19 @@ import { MARKET_SOURCE, type MarketSource } from "@/lib/api/market.types";
 import { useMarketData } from "@/lib/hooks/useMarketData";
 import { useMarketSocket } from "@/lib/hooks/useMarketSocket";
 
+const marketTheme: React.CSSProperties = {
+  "--color-bg-main": "#0b1220",
+  "--color-bg-sub": "#121a2f",
+  "--color-surface": "#13203a",
+  "--color-surface-muted": "#172847",
+  "--color-border-soft": "#233357",
+  "--color-border-strong": "#2e4473",
+  "--color-text-main": "#eaf1ff",
+  "--color-text-sub": "#b7c4e0",
+  "--shadow-soft": "0 18px 45px rgba(2, 8, 23, 0.45)",
+  "--shadow-card": "0 14px 32px rgba(2, 8, 23, 0.4)",
+};
+
 export default function MarketPage() {
   const [source, setSource] = useState<MarketSource>(MARKET_SOURCE.BINANCE);
   const socketStatus = useMarketSocket(source);
@@ -22,7 +35,7 @@ export default function MarketPage() {
     useMarketData(source, enablePolling);
 
   return (
-    <PageShell>
+    <PageShell style={marketTheme}>
       <main className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-6 py-16">
         <MarketHeader
           title={ticker?.symbol ?? "Market Overview"}
