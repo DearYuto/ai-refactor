@@ -39,6 +39,37 @@ type BtcChartSectionProps = {
   onSourceChange: (source: MarketSource) => void;
 };
 
+const getCssVar = (name: string, fallback: string) => {
+  if (typeof window === "undefined") {
+    return fallback;
+  }
+
+  const value = getComputedStyle(document.documentElement)
+    .getPropertyValue(name)
+    .trim();
+  return value || fallback;
+};
+
+const toRgba = (color: string, alpha: number) => {
+  if (!color.startsWith("#")) {
+    return color;
+  }
+
+  let hex = color.slice(1);
+  if (hex.length === 3) {
+    hex = hex
+      .split("")
+      .map((value) => value + value)
+      .join("");
+  }
+
+  const parsed = Number.parseInt(hex, 16);
+  const red = (parsed >> 16) & 255;
+  const green = (parsed >> 8) & 255;
+  const blue = parsed & 255;
+  return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
+};
+
 export const BtcChartSection = ({
   source,
   onSourceChange,
@@ -65,24 +96,44 @@ export const BtcChartSection = ({
       queryClient.getQueryData<Ticker>(marketQueryKeys.ticker(source)),
   });
 
+  const chartTheme = useMemo(() => {
+    const textPrimary = getCssVar("--color-text-primary", "#e5e7eb");
+    const textSecondary = getCssVar("--color-text-secondary", "#9ca3af");
+    const borderSecondary = getCssVar("--color-border-secondary", "#2d3748");
+    const buy = getCssVar("--color-buy", "#2dd4bf");
+    const sell = getCssVar("--color-sell", "#fb7185");
+
+    return {
+      textPrimary,
+      textSecondary,
+      borderSecondary,
+      buy,
+      sell,
+    };
+  }, []);
+
   const chartOptions = useMemo(
     () => ({
       layout: {
         background: { color: "transparent" },
-        textColor: "#cbd5f5",
+        textColor: chartTheme.textSecondary,
       },
       grid: {
-        vertLines: { color: "rgba(148, 163, 184, 0.16)" },
-        horzLines: { color: "rgba(148, 163, 184, 0.16)" },
+        vertLines: {
+          color: toRgba(chartTheme.borderSecondary, 0.16),
+        },
+        horzLines: {
+          color: toRgba(chartTheme.borderSecondary, 0.16),
+        },
       },
       timeScale: {
-        borderColor: "rgba(148, 163, 184, 0.24)",
+        borderColor: toRgba(chartTheme.borderSecondary, 0.24),
       },
       rightPriceScale: {
-        borderColor: "rgba(148, 163, 184, 0.24)",
+        borderColor: toRgba(chartTheme.borderSecondary, 0.24),
       },
     }),
-    [],
+    [chartTheme],
   );
 
   useEffect(() => {
@@ -95,11 +146,11 @@ export const BtcChartSection = ({
     });
 
     const series = chart.addSeries(CandlestickSeries, {
-      upColor: "#22c55e",
-      downColor: "#f43f5e",
+      upColor: chartTheme.buy,
+      downColor: chartTheme.sell,
       borderVisible: false,
-      wickUpColor: "#22c55e",
-      wickDownColor: "#f43f5e",
+      wickUpColor: chartTheme.buy,
+      wickDownColor: chartTheme.sell,
     });
 
     const volumeSeries = chart.addSeries(HistogramSeries, {
@@ -128,7 +179,7 @@ export const BtcChartSection = ({
       seriesRef.current = null;
       volumeSeriesRef.current = null;
     };
-  }, [chartOptions]);
+  }, [chartOptions, chartTheme.buy, chartTheme.sell]);
 
   useEffect(() => {
     if (!seriesRef.current || !chartQuery.data) return;

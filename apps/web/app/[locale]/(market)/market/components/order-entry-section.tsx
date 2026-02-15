@@ -99,8 +99,8 @@ export const OrderEntrySection = ({ source }: OrderEntrySectionProps) => {
             }}
             className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium transition ${
               side === "buy"
-                ? "bg-emerald-500/20 text-emerald-200 ring-1 ring-emerald-400/50"
-                : "bg-[var(--color-surface-muted)] text-[var(--color-text-sub)]"
+                ? "bg-[var(--color-buy)] text-[var(--color-surface-1)] ring-1 ring-[var(--color-buy-border)]"
+                : "bg-[var(--color-surface-muted)] text-[var(--color-buy)]"
             }`}
           >
             Buy
@@ -115,8 +115,8 @@ export const OrderEntrySection = ({ source }: OrderEntrySectionProps) => {
             }}
             className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium transition ${
               side === "sell"
-                ? "bg-rose-500/20 text-rose-200 ring-1 ring-rose-400/50"
-                : "bg-[var(--color-surface-muted)] text-[var(--color-text-sub)]"
+                ? "bg-[var(--color-sell)] text-[var(--color-surface-1)] ring-1 ring-[var(--color-sell-border)]"
+                : "bg-[var(--color-surface-muted)] text-[var(--color-sell)]"
             }`}
           >
             Sell
@@ -166,7 +166,7 @@ export const OrderEntrySection = ({ source }: OrderEntrySectionProps) => {
           type="submit"
           data-testid="order-submit"
           disabled={isSubmitDisabled}
-          className="rounded-lg bg-gradient-to-r from-[var(--color-brand-500)] to-[var(--color-brand-700)] px-4 py-2 text-sm font-semibold text-white shadow-[0_10px_28px_-14px_rgba(58,141,255,0.8)] transition hover:from-[var(--color-brand-300)] hover:to-[var(--color-brand-500)] disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-lg bg-gradient-to-r from-[var(--color-brand-500)] to-[var(--color-brand-700)] px-4 py-2 text-sm font-semibold text-white shadow-[0_10px_28px_-14px_var(--color-brand-400)] transition hover:from-[var(--color-brand-300)] hover:to-[var(--color-brand-500)] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isSubmitting ? "Submitting..." : "Place market order"}
         </button>

@@ -63,16 +63,18 @@ export const OrderbookSection = ({
                   <li
                     key={`bid-${bid.price}-${bid.size}`}
                     className={`relative flex items-center justify-between overflow-hidden rounded-xl px-3 py-2 ${
-                      isTop ? "ring-1 ring-emerald-400/60" : ""
+                      isTop ? "ring-1 ring-[var(--color-buy-border)]" : ""
                     }`}
                   >
                     <span
                       className={`absolute inset-y-0 right-0 ${
-                        isTop ? "bg-emerald-500/20" : "bg-emerald-500/10"
+                        isTop
+                          ? "bg-[var(--color-buy-border)]"
+                          : "bg-[var(--color-buy-bg)]"
                       }`}
                       style={{ width }}
                     />
-                    <span className="relative text-[var(--color-text-main)]">
+                    <span className="relative font-semibold text-[var(--color-buy)]">
                       {formatPrice(bid.price, source)}
                     </span>
                     <span className="relative text-[var(--color-text-sub)]">
@@ -114,16 +116,18 @@ export const OrderbookSection = ({
                   <li
                     key={`ask-${ask.price}-${ask.size}`}
                     className={`relative flex items-center justify-between overflow-hidden rounded-xl px-3 py-2 ${
-                      isTop ? "ring-1 ring-rose-400/60" : ""
+                      isTop ? "ring-1 ring-[var(--color-sell-border)]" : ""
                     }`}
                   >
                     <span
                       className={`absolute inset-y-0 left-0 ${
-                        isTop ? "bg-rose-500/20" : "bg-rose-500/10"
+                        isTop
+                          ? "bg-[var(--color-sell-border)]"
+                          : "bg-[var(--color-sell-bg)]"
                       }`}
                       style={{ width }}
                     />
-                    <span className="relative text-[var(--color-text-main)]">
+                    <span className="relative font-semibold text-[var(--color-sell)]">
                       {formatPrice(ask.price, source)}
                     </span>
                     <span className="relative text-[var(--color-text-sub)]">
@@ -146,11 +150,11 @@ export const OrderbookSection = ({
           <span className="text-[var(--color-text-sub)]">Spread</span>
           <div className="flex items-center gap-3 text-sm">
             <span className="text-[var(--color-text-sub)]">Bid</span>
-            <span className="text-[var(--color-text-main)]">
+            <span className="text-[var(--color-buy)]">
               {bestBid !== null ? formatPrice(bestBid, source) : "--"}
             </span>
             <span className="text-[var(--color-text-sub)]">Ask</span>
-            <span className="text-[var(--color-text-main)]">
+            <span className="text-[var(--color-sell)]">
               {bestAsk !== null ? formatPrice(bestAsk, source) : "--"}
             </span>
             <span className="text-[var(--color-text-sub)]">Spread</span>

@@ -177,7 +177,10 @@ export const fetchKlines = async (
       return {
         time: Math.floor(openTime / 1000) as UTCTimestamp,
         value: Number(volume),
-        color: Number(close) >= Number(open) ? "#22c55e" : "#f43f5e",
+        color:
+          Number(close) >= Number(open)
+            ? "var(--color-buy)"
+            : "var(--color-sell)",
       };
     });
 
@@ -205,7 +208,10 @@ export const fetchKlines = async (
   const volumes = reversed.map((item) => ({
     time: Math.floor(item.timestamp / 1000) as UTCTimestamp,
     value: item.candle_acc_trade_volume,
-    color: item.trade_price >= item.opening_price ? "#22c55e" : "#f43f5e",
+    color:
+      item.trade_price >= item.opening_price
+        ? "var(--color-buy)"
+        : "var(--color-sell)",
   }));
 
   return { candles, volumes };

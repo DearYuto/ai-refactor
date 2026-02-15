@@ -46,7 +46,9 @@ export const TradeTapeSection = ({
           >
             <span
               className={
-                trade.side === "buy" ? "text-emerald-400" : "text-rose-400"
+                trade.side === "buy"
+                  ? "text-[var(--color-buy)]"
+                  : "text-[var(--color-sell)]"
               }
             >
               {formatPrice(trade.price, source)}
