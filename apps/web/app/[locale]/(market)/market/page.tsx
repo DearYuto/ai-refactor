@@ -7,6 +7,8 @@ import { LivePriceSection } from "@/app/[locale]/(market)/market/components/live
 import { OrderbookSection } from "@/app/[locale]/(market)/market/components/orderbook-section";
 import { TickerSection } from "@/app/[locale]/(market)/market/components/ticker-section";
 import { TradeTapeSection } from "@/app/[locale]/(market)/market/components/trade-tape-section";
+import { WalletBalanceSection } from "@/app/[locale]/(market)/market/components/wallet-balance-section";
+import { OrderEntrySection } from "@/app/[locale]/(market)/market/components/order-entry-section";
 import { PageShell } from "@/components/layout/page-shell";
 import { MARKET_SOURCE, type MarketSource } from "@/lib/api/market.types";
 import { useMarketData } from "@/lib/hooks/useMarketData";
@@ -37,6 +39,11 @@ export default function MarketPage() {
           lastUpdated={lastUpdated}
           source={source}
         />
+
+        <section className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
+          <WalletBalanceSection />
+          <OrderEntrySection source={source} />
+        </section>
 
         <TickerSection
           ticker={ticker}
