@@ -40,7 +40,10 @@ export const TradeTapeSection = ({
     ) : trades?.length ? (
       <ul className="mt-4 space-y-2 text-sm">
         {trades.map((trade) => (
-          <li key={trade.id} className="flex items-center justify-between">
+          <li
+            key={`trade-${trade.id}-${trade.timestamp}-${trade.price}-${trade.size}-${trade.side}`}
+            className="flex items-center justify-between"
+          >
             <span
               className={
                 trade.side === "buy" ? "text-emerald-400" : "text-rose-400"

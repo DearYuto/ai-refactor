@@ -61,7 +61,7 @@ export const OrderbookSection = ({
                 const isTop = index === 0;
                 return (
                   <li
-                    key={`bid-${index}`}
+                    key={`bid-${bid.price}-${bid.size}`}
                     className={`relative flex items-center justify-between overflow-hidden rounded-xl px-3 py-2 ${
                       isTop ? "ring-1 ring-emerald-400/60" : ""
                     }`}
@@ -112,7 +112,7 @@ export const OrderbookSection = ({
                 const isTop = index === 0;
                 return (
                   <li
-                    key={`ask-${index}`}
+                    key={`ask-${ask.price}-${ask.size}`}
                     className={`relative flex items-center justify-between overflow-hidden rounded-xl px-3 py-2 ${
                       isTop ? "ring-1 ring-rose-400/60" : ""
                     }`}
