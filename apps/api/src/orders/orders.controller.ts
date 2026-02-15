@@ -16,10 +16,7 @@ export class OrdersController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  async createOrder(
-    @Req() request: AuthRequest,
-    @Body() body: CreateOrderDto,
-  ) {
+  async createOrder(@Req() request: AuthRequest, @Body() body: CreateOrderDto) {
     const order = await this.ordersService.createOrder(
       request.user.email,
       body,
