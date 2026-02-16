@@ -47,7 +47,22 @@ const getCssVar = (name: string, fallback: string) => {
   const value = getComputedStyle(document.documentElement)
     .getPropertyValue(name)
     .trim();
-  return value || fallback;
+  const candidate = value || fallback;
+
+  if (!candidate.startsWith("var(")) {
+    return candidate;
+  }
+
+  const resolver = document.createElement("span");
+  resolver.style.color = candidate;
+  resolver.style.position = "absolute";
+  resolver.style.opacity = "0";
+  resolver.style.pointerEvents = "none";
+  (document.body ?? document.documentElement).appendChild(resolver);
+  const resolved = getComputedStyle(resolver).color.trim();
+  resolver.remove();
+
+  return resolved || fallback;
 };
 
 const toRgba = (color: string, alpha: number) => {
@@ -184,7 +199,18 @@ export const BtcChartSection = ({
   useEffect(() => {
     if (!seriesRef.current || !chartQuery.data) return;
     seriesRef.current.setData(chartQuery.data.candles);
-    volumeSeriesRef.current?.setData(chartQuery.data.volumes);
+    const volumes = chartQuery.data.volumes.map((volume) => {
+      if (volume.color === "var(--color-buy)") {
+        return { ...volume, color: chartTheme.buy };
+      }
+
+      if (volume.color === "var(--color-sell)") {
+        return { ...volume, color: chartTheme.sell };
+      }
+
+      return volume;
+    });
+    volumeSeriesRef.current?.setData(volumes);
     lastBarRef.current =
       chartQuery.data.candles[chartQuery.data.candles.length - 1] ?? null;
     chartRef.current?.timeScale().fitContent();
