@@ -1,5 +1,9 @@
 # AGENTS.md
 
+# 커뮤니케이션
+
+- 모든 응답은 한국어로 대답
+
 # Repository Guidance for Agentic Coding
 
 This file documents build/test/lint commands and local conventions.
