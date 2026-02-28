@@ -8,6 +8,7 @@ import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../database/prisma.service';
 import { DEFAULT_BALANCES } from '../common/constants/assets';
 import { LoggerService } from '../common/logger/logger.service';
+import { TwoFactorService } from './two-factor.service';
 
 @Injectable()
 export class AuthService {
@@ -15,6 +16,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly prisma: PrismaService,
     private readonly logger: LoggerService,
+    private readonly twoFactorService: TwoFactorService,
   ) {}
 
   async signup(
@@ -48,7 +50,10 @@ export class AuthService {
   async login(
     email: string,
     password: string,
-  ): Promise<{ accessToken: string }> {
+    twoFactorToken?: string,
+  ): Promise<
+    { accessToken: string } | { requiresTwoFactor: true; message: string }
+  > {
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user) {
       this.logger.logAuth('login', email, false);
@@ -59,6 +64,28 @@ export class AuthService {
     if (!isValid) {
       this.logger.logAuth('login', email, false);
       throw new UnauthorizedException('Invalid credentials');
+    }
+
+    // 2FA 활성화된 경우
+    if (user.twoFactorEnabled) {
+      if (!twoFactorToken) {
+        // 2FA 코드 요구
+        return {
+          requiresTwoFactor: true,
+          message: '2FA code required',
+        };
+      }
+
+      // 2FA 코드 검증
+      const isValid = await this.twoFactorService.verifyTwoFactorToken(
+        user.id,
+        twoFactorToken,
+      );
+
+      if (!isValid) {
+        this.logger.logAuth('login', email, false);
+        throw new UnauthorizedException('Invalid 2FA code');
+      }
     }
 
     this.logger.logAuth('login', user.email, true);

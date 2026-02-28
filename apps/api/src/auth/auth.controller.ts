@@ -21,7 +21,7 @@ export class AuthController {
   @Post('login')
   @Throttle({ default: { limit: 5, ttl: 60000 } }) // 60초당 5회
   login(@Body() body: LoginDto) {
-    return this.authService.login(body.email, body.password);
+    return this.authService.login(body.email, body.password, body.twoFactorToken);
   }
 
   @Get('me')

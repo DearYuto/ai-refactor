@@ -8,15 +8,21 @@ generator client {
 }
 
 model User {
-  id           String          @id @default(cuid())
-  email        String          @unique
-  passwordHash String
-  createdAt    DateTime        @default(now())
-  orders       Order[]
-  balances     WalletBalance[]
-  transactions Transaction[]
-  deposits     Deposit[]
-  withdrawals  Withdrawal[]
+  id                String               @id @default(cuid())
+  email             String               @unique
+  passwordHash      String
+  emailVerified     Boolean              @default(false)
+  emailVerifiedAt   DateTime?
+  twoFactorEnabled  Boolean              @default(false)
+  twoFactorSecret   String?
+  createdAt         DateTime             @default(now())
+  orders            Order[]
+  balances          WalletBalance[]
+  transactions      Transaction[]
+  deposits          Deposit[]
+  withdrawals       Withdrawal[]
+  emailVerifications EmailVerification[]
+  backupCodes       BackupCode[]
 }
 
 model Order {
@@ -130,4 +136,29 @@ model Withdrawal {
 
   @@index([userId, status])
   @@index([status, requestedAt])
+}
+
+model EmailVerification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([token])
+}
+
+model BackupCode {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  code      String   @unique
+  used      Boolean  @default(false)
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([code])
 }

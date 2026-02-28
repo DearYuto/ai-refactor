@@ -4,9 +4,19 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthController } from './auth.controller';
 import { JwtAuthGuard } from './auth.guard';
 import { AuthService } from './auth.service';
+import { TwoFactorController } from './two-factor.controller';
+import { TwoFactorService } from './two-factor.service';
+import { EmailVerificationController } from './email-verification.controller';
+import { EmailVerificationService } from './email-verification.service';
+import { DatabaseModule } from '../database/database.module';
+import { LoggerModule } from '../common/logger/logger.module';
+import { EmailModule } from '../common/email/email.module';
 
 @Module({
   imports: [
+    DatabaseModule,
+    LoggerModule,
+    EmailModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -16,8 +26,17 @@ import { AuthService } from './auth.service';
       }),
     }),
   ],
-  controllers: [AuthController],
-  providers: [AuthService, JwtAuthGuard],
-  exports: [JwtAuthGuard, JwtModule],
+  controllers: [
+    AuthController,
+    TwoFactorController,
+    EmailVerificationController,
+  ],
+  providers: [
+    AuthService,
+    TwoFactorService,
+    EmailVerificationService,
+    JwtAuthGuard,
+  ],
+  exports: [JwtAuthGuard, JwtModule, TwoFactorService, AuthService],
 })
 export class AuthModule {}
