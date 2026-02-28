@@ -8,6 +8,7 @@ import { useBalances } from "@/lib/hooks/useBalances";
 import { useMarketOrderStore } from "@/lib/store";
 import type { OrderSide, OrderType, OrderRecord } from "@/lib/api/orders.api";
 import { formatNumeric } from "@repo/utils";
+import { OrderListSkeleton } from "@/components/skeleton";
 
 type OrderEntrySectionProps = {
   source: MarketSource;
@@ -389,12 +390,7 @@ export const OrderEntrySection = ({
         </div>
 
         {isLoading ? (
-          <p
-            className="text-sm text-[var(--color-text-sub)]"
-            data-testid="recent-orders-loading"
-          >
-            Loading orders...
-          </p>
+          <OrderListSkeleton />
         ) : error ? (
           <p className="text-sm text-red-400" data-testid="recent-orders-error">
             {error}

@@ -8,14 +8,7 @@ import {
   type OrderRecord,
 } from "@/lib/api/orders.api";
 import { getWalletControllerGetBalanceQueryKey } from "@/lib/api/generated";
-
-const extractErrorMessage = (
-  error: unknown,
-  fallback: string,
-): string | null => {
-  if (!error) return null;
-  return error instanceof Error ? error.message : fallback;
-};
+import { getErrorMessage } from "@/lib/errors/error-messages";
 
 type OrdersState = {
   orders: OrderRecord[] | null;
@@ -59,14 +52,10 @@ export const useOrders = (): OrdersState => {
     onSuccess: () => invalidateOrdersAndWallet(queryClient),
   });
 
-  const message = extractErrorMessage(
-    ordersQuery.error,
-    "Unable to load orders",
-  );
-  const submitError = extractErrorMessage(
-    createOrderMutation.error,
-    "Unable to submit order",
-  );
+  const message = ordersQuery.error ? getErrorMessage(ordersQuery.error) : null;
+  const submitError = createOrderMutation.error
+    ? getErrorMessage(createOrderMutation.error)
+    : null;
 
   return {
     orders: ordersQuery.data ?? null,

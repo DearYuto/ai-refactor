@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import "../globals.css";
 import Providers from "../providers";
+import { ErrorBoundary } from "@/components/error-boundary";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,9 +43,11 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <NextIntlClientProvider locale={locale} messages={messages}>
-          <Providers>{children}</Providers>
-        </NextIntlClientProvider>
+        <ErrorBoundary>
+          <NextIntlClientProvider locale={locale} messages={messages}>
+            <Providers>{children}</Providers>
+          </NextIntlClientProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

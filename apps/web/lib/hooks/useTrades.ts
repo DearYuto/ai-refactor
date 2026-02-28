@@ -5,6 +5,7 @@ import {
   type TradeRecord,
 } from "@/lib/api/trades.api";
 import type { MarketSource, Trade } from "@/lib/api/market.types";
+import { getErrorMessage } from "@/lib/errors/error-messages";
 
 const convertTradeRecordToTrade = (record: TradeRecord): Trade => ({
   id: record.id,
@@ -24,6 +25,6 @@ export const useTrades = (source: MarketSource, limit = 20) => {
   return {
     trades: data ? data.map(convertTradeRecordToTrade) : [],
     isLoading,
-    error: error ? String(error) : null,
+    error: error ? getErrorMessage(error) : null,
   };
 };

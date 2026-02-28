@@ -1,6 +1,7 @@
 import { SurfaceCard } from "@/components/ui/surface-card";
 import { useBalances } from "@/lib/hooks/useBalances";
 import { formatNumeric } from "@repo/utils";
+import { BalanceSkeleton } from "@/components/skeleton";
 
 const formatBalance = (asset: string, value: string | number) => {
   const parsed = Number(value);
@@ -30,12 +31,7 @@ export const WalletBalanceSection = () => {
       </div>
 
       {isLoading ? (
-        <p
-          className="text-sm text-[var(--color-text-sub)]"
-          data-testid="wallet-balance-loading"
-        >
-          Loading balances...
-        </p>
+        <BalanceSkeleton />
       ) : error ? (
         <p className="text-sm text-red-400" data-testid="wallet-balance-error">
           {error}
