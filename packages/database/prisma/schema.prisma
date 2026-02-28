@@ -15,6 +15,8 @@ model User {
   orders       Order[]
   balances     WalletBalance[]
   transactions Transaction[]
+  deposits     Deposit[]
+  withdrawals  Withdrawal[]
 }
 
 model Order {
@@ -93,4 +95,39 @@ model Transaction {
 
   @@index([userId, timestamp])
   @@index([userId, asset, timestamp])
+}
+
+model Deposit {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  asset         String   // BTC, USDT, KRW
+  amount        Float
+  txHash        String?  // 블록체인 트랜잭션 해시 (실제 입금 시)
+  status        String   @default("pending") // pending, confirmed, failed
+  confirmations Int      @default(0) // 블록체인 확인 횟수
+  createdAt     DateTime @default(now())
+  confirmedAt   DateTime?
+
+  @@index([userId, status])
+  @@index([status, createdAt])
+}
+
+model Withdrawal {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  asset         String   // BTC, USDT, KRW
+  amount        Float
+  fee           Float    // 출금 수수료
+  toAddress     String   // 출금 주소
+  txHash        String?  // 블록체인 트랜잭션 해시 (실제 출금 시)
+  status        String   @default("pending") // pending, approved, processing, completed, rejected
+  rejectReason  String?
+  requestedAt   DateTime @default(now())
+  approvedAt    DateTime?
+  completedAt   DateTime?
+
+  @@index([userId, status])
+  @@index([status, requestedAt])
 }

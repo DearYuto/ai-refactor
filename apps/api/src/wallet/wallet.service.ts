@@ -263,4 +263,45 @@ export class WalletService {
       );
     });
   }
+
+  /**
+   * Subtract balance from user's available funds (used for withdrawals).
+   */
+  async subtractBalance(
+    userId: string,
+    asset: string,
+    amount: number,
+  ): Promise<void> {
+    await this.prisma.$transaction(async (tx) => {
+      const balance = await tx.walletBalance.findUnique({
+        where: { userId_asset: { userId, asset } },
+      });
+      if (!balance) {
+        throw new BadRequestException('Unsupported asset');
+      }
+      if (balance.available < amount) {
+        throw new BadRequestException('Insufficient balance');
+      }
+
+      const availableBefore = balance.available;
+
+      await tx.walletBalance.update({
+        where: { userId_asset: { userId, asset } },
+        data: {
+          available: { decrement: amount },
+        },
+      });
+
+      // 트랜잭션 로그 기록
+      await this.logTransaction(
+        tx,
+        userId,
+        'WITHDRAW',
+        asset,
+        -amount,
+        availableBefore,
+        availableBefore - amount,
+      );
+    });
+  }
 }
