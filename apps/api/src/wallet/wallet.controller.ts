@@ -9,7 +9,8 @@ export class WalletController {
 
   @Get('balance')
   @UseGuards(JwtAuthGuard)
-  getBalance(@Req() request: AuthRequest) {
-    return { balances: this.walletService.getBalances(request.user.email) };
+  async getBalance(@Req() request: AuthRequest) {
+    const balances = await this.walletService.getBalances(request.user.email);
+    return { balances };
   }
 }

@@ -8,8 +8,41 @@ generator client {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
+  id           String          @id @default(cuid())
+  email        String          @unique
   passwordHash String
-  createdAt    DateTime @default(now())
+  createdAt    DateTime        @default(now())
+  orders       Order[]
+  balances     WalletBalance[]
+}
+
+model Order {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  side        String
+  type        String   @default("market")
+  size        Float
+  price       Float?
+  filledPrice Float?
+  notional    Float?
+  source      String
+  baseAsset   String
+  quoteAsset  String
+  status      String   @default("pending")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model WalletBalance {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  asset     String
+  available Float    @default(0)
+  locked    Float    @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, asset])
 }

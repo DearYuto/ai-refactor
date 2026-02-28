@@ -55,7 +55,10 @@ export default function MarketPage() {
 
         <section className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
           <WalletBalanceSection />
-          <OrderEntrySection source={source} />
+          <OrderEntrySection
+            source={source}
+            currentPrice={ticker ? Number(ticker.price) : null}
+          />
         </section>
 
         <TickerSection

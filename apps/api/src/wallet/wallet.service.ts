@@ -1,75 +1,142 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { DEFAULT_BALANCES } from '../common/constants/assets';
+import { PrismaService } from '../database/prisma.service';
 
-type WalletBalance = {
+type WalletBalanceRecord = {
   asset: string;
   available: number;
+  locked: number;
 };
 
 @Injectable()
 export class WalletService {
-  private readonly balancesByUser = new Map<string, WalletBalance[]>();
+  constructor(private readonly prisma: PrismaService) {}
 
-  getBalances(email: string): WalletBalance[] {
-    return this.getOrCreateBalances(email);
-  }
-
-  adjustBalance(email: string, asset: string, delta: number): WalletBalance {
-    if (!Number.isFinite(delta)) {
-      throw new BadRequestException('Invalid balance adjustment');
+  async getBalances(email: string): Promise<WalletBalanceRecord[]> {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+      include: { balances: true },
+    });
+    if (!user) {
+      throw new BadRequestException('User not found');
     }
-
-    const balances = this.getOrCreateBalances(email);
-    const balance = balances.find((item) => item.asset === asset);
-
-    if (!balance) {
-      throw new BadRequestException('Unsupported asset');
-    }
-
-    const nextAvailable = balance.available + delta;
-    if (nextAvailable < 0) {
-      throw new BadRequestException('Insufficient balance');
-    }
-
-    balance.available = nextAvailable;
-    return balance;
+    return user.balances.map((b) => ({
+      asset: b.asset,
+      available: b.available,
+      locked: b.locked,
+    }));
   }
 
   /**
    * Atomically swap balances between two assets for a single user.
-   * If either adjustment would fail, neither is applied.
+   * Uses a Prisma transaction for atomicity.
    */
-  swapBalances(
+  async swapBalances(
     email: string,
     debit: { asset: string; amount: number },
     credit: { asset: string; amount: number },
-  ): void {
-    const balances = this.getOrCreateBalances(email);
-
-    const debitBalance = balances.find((item) => item.asset === debit.asset);
-    const creditBalance = balances.find((item) => item.asset === credit.asset);
-
-    if (!debitBalance || !creditBalance) {
-      throw new BadRequestException('Unsupported asset');
+  ): Promise<void> {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      throw new BadRequestException('User not found');
     }
 
-    const nextDebit = debitBalance.available - debit.amount;
-    if (nextDebit < 0) {
-      throw new BadRequestException('Insufficient balance');
-    }
+    await this.prisma.$transaction(async (tx) => {
+      const debitBalance = await tx.walletBalance.findUnique({
+        where: { userId_asset: { userId: user.id, asset: debit.asset } },
+      });
+      const creditBalance = await tx.walletBalance.findUnique({
+        where: { userId_asset: { userId: user.id, asset: credit.asset } },
+      });
 
-    debitBalance.available = nextDebit;
-    creditBalance.available = creditBalance.available + credit.amount;
+      if (!debitBalance || !creditBalance) {
+        throw new BadRequestException('Unsupported asset');
+      }
+
+      if (debitBalance.available < debit.amount) {
+        throw new BadRequestException('Insufficient balance');
+      }
+
+      await tx.walletBalance.update({
+        where: { userId_asset: { userId: user.id, asset: debit.asset } },
+        data: { available: { decrement: debit.amount } },
+      });
+      await tx.walletBalance.update({
+        where: { userId_asset: { userId: user.id, asset: credit.asset } },
+        data: { available: { increment: credit.amount } },
+      });
+    });
   }
 
-  private getOrCreateBalances(email: string): WalletBalance[] {
-    const existing = this.balancesByUser.get(email);
-    if (existing) {
-      return existing;
-    }
+  /**
+   * Lock funds from available to locked (for limit orders).
+   */
+  async lockBalance(
+    userId: string,
+    asset: string,
+    amount: number,
+  ): Promise<void> {
+    await this.prisma.$transaction(async (tx) => {
+      const balance = await tx.walletBalance.findUnique({
+        where: { userId_asset: { userId, asset } },
+      });
+      if (!balance) {
+        throw new BadRequestException('Unsupported asset');
+      }
+      if (balance.available < amount) {
+        throw new BadRequestException('Insufficient balance');
+      }
+      await tx.walletBalance.update({
+        where: { userId_asset: { userId, asset } },
+        data: {
+          available: { decrement: amount },
+          locked: { increment: amount },
+        },
+      });
+    });
+  }
 
-    const balances = DEFAULT_BALANCES.map((balance) => ({ ...balance }));
-    this.balancesByUser.set(email, balances);
-    return balances;
+  /**
+   * Unlock funds from locked back to available (on order cancel).
+   */
+  async unlockBalance(
+    userId: string,
+    asset: string,
+    amount: number,
+  ): Promise<void> {
+    await this.prisma.walletBalance.update({
+      where: { userId_asset: { userId, asset } },
+      data: {
+        locked: { decrement: amount },
+        available: { increment: amount },
+      },
+    });
+  }
+
+  /**
+   * Fill a limit order: deduct from locked, credit the other asset.
+   */
+  async fillLimitOrder(
+    userId: string,
+    debit: { asset: string; lockedAmount: number },
+    credit: { asset: string; amount: number },
+  ): Promise<void> {
+    await this.prisma.$transaction(async (tx) => {
+      await tx.walletBalance.update({
+        where: { userId_asset: { userId, asset: debit.asset } },
+        data: { locked: { decrement: debit.lockedAmount } },
+      });
+      await tx.walletBalance.update({
+        where: { userId_asset: { userId, asset: credit.asset } },
+        data: { available: { increment: credit.amount } },
+      });
+    });
+  }
+
+  async getUserId(email: string): Promise<string> {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+    return user.id;
   }
 }

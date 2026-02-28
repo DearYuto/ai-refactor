@@ -6,23 +6,29 @@ export const ordersQueryKeys = {
 };
 
 export type OrderSide = "buy" | "sell";
+export type OrderType = "market" | "limit";
+export type OrderStatus = "open" | "filled" | "cancelled";
 
 export type OrderRecord = {
   id: string;
   side: OrderSide;
+  type: OrderType;
   size: number;
-  price: number;
-  notional: number;
+  price: number | null;
+  filledPrice: number | null;
+  notional: number | null;
   source: MarketSource;
   baseAsset: string;
   quoteAsset: string;
-  status: "filled";
+  status: OrderStatus;
   createdAt: string;
 };
 
 export type CreateOrderPayload = {
   side: OrderSide;
+  type: OrderType;
   size: number;
+  price?: number;
   source: MarketSource;
 };
 
@@ -56,5 +62,13 @@ export const createOrder = async (
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
+  return response.data;
+};
+
+export const cancelOrder = async (id: string): Promise<OrderResponse> => {
+  const response = await customFetch<FetchResponse<OrderResponse>>(
+    `/orders/${id}`,
+    { method: "DELETE" },
+  );
   return response.data;
 };

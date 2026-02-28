@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  cancelOrder,
   createOrder,
   fetchOrders,
   ordersQueryKeys,
@@ -23,7 +24,17 @@ type OrdersState = {
   isSubmitting: boolean;
   submitError: string | null;
   placeOrder: (payload: CreateOrderPayload) => Promise<OrderRecord>;
+  cancelOrder: (id: string) => Promise<OrderRecord>;
   resetSubmission: () => void;
+};
+
+const invalidateOrdersAndWallet = async (
+  queryClient: ReturnType<typeof useQueryClient>,
+) => {
+  await queryClient.invalidateQueries({ queryKey: ordersQueryKeys.all() });
+  await queryClient.invalidateQueries({
+    queryKey: getWalletControllerGetBalanceQueryKey(),
+  });
 };
 
 export const useOrders = (): OrdersState => {
@@ -40,15 +51,18 @@ export const useOrders = (): OrdersState => {
 
   const createOrderMutation = useMutation({
     mutationFn: (payload: CreateOrderPayload) => createOrder(payload),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ordersQueryKeys.all() });
-      await queryClient.invalidateQueries({
-        queryKey: getWalletControllerGetBalanceQueryKey(),
-      });
-    },
+    onSuccess: () => invalidateOrdersAndWallet(queryClient),
   });
 
-  const message = extractErrorMessage(ordersQuery.error, "Unable to load orders");
+  const cancelOrderMutation = useMutation({
+    mutationFn: (id: string) => cancelOrder(id),
+    onSuccess: () => invalidateOrdersAndWallet(queryClient),
+  });
+
+  const message = extractErrorMessage(
+    ordersQuery.error,
+    "Unable to load orders",
+  );
   const submitError = extractErrorMessage(
     createOrderMutation.error,
     "Unable to submit order",
@@ -62,6 +76,10 @@ export const useOrders = (): OrdersState => {
     submitError,
     placeOrder: async (payload: CreateOrderPayload) => {
       const response = await createOrderMutation.mutateAsync(payload);
+      return response.order;
+    },
+    cancelOrder: async (id: string) => {
+      const response = await cancelOrderMutation.mutateAsync(id);
       return response.order;
     },
     resetSubmission: () => createOrderMutation.reset(),

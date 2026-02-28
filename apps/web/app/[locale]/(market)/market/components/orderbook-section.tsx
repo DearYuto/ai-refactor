@@ -1,6 +1,9 @@
+"use client";
+
 import type { MarketSource, Orderbook } from "@/lib/api/market.types";
 import { formatPrice, formatSize } from "@/lib/format/market";
 import { SurfaceCard } from "@/components/ui/surface-card";
+import { useMarketOrderStore } from "@/lib/store";
 
 type OrderbookSectionProps = {
   orderbook: Orderbook | null;
@@ -15,6 +18,9 @@ export const OrderbookSection = ({
   error,
   source,
 }: OrderbookSectionProps) => {
+  const setSelectedOrderPrice = useMarketOrderStore(
+    (s) => s.setSelectedOrderPrice,
+  );
   const bids = orderbook?.bids ?? [];
   const asks = orderbook?.asks ?? [];
   const bidTotals = bids.reduce<number[]>((acc, bid) => {
@@ -62,9 +68,12 @@ export const OrderbookSection = ({
                 return (
                   <li
                     key={`bid-${bid.price}-${bid.size}`}
-                    className={`relative flex items-center justify-between overflow-hidden rounded-xl px-3 py-2 ${
+                    className={`relative flex cursor-pointer items-center justify-between overflow-hidden rounded-xl px-3 py-2 transition-opacity hover:opacity-80 ${
                       isTop ? "ring-1 ring-[var(--color-buy-border)]" : ""
                     }`}
+                    onClick={() =>
+                      setSelectedOrderPrice(Number(bid.price))
+                    }
                   >
                     <span
                       className={`absolute inset-y-0 right-0 ${
@@ -115,9 +124,12 @@ export const OrderbookSection = ({
                 return (
                   <li
                     key={`ask-${ask.price}-${ask.size}`}
-                    className={`relative flex items-center justify-between overflow-hidden rounded-xl px-3 py-2 ${
+                    className={`relative flex cursor-pointer items-center justify-between overflow-hidden rounded-xl px-3 py-2 transition-opacity hover:opacity-80 ${
                       isTop ? "ring-1 ring-[var(--color-sell-border)]" : ""
                     }`}
+                    onClick={() =>
+                      setSelectedOrderPrice(Number(ask.price))
+                    }
                   >
                     <span
                       className={`absolute inset-y-0 left-0 ${

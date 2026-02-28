@@ -5,28 +5,38 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
-
-type UserRecord = {
-  email: string;
-  passwordHash: string;
-};
+import { PrismaService } from '../database/prisma.service';
+import { DEFAULT_BALANCES } from '../common/constants/assets';
 
 @Injectable()
 export class AuthService {
-  private readonly users = new Map<string, UserRecord>();
-
-  constructor(private readonly jwtService: JwtService) {}
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly prisma: PrismaService,
+  ) {}
 
   async signup(
     email: string,
     password: string,
   ): Promise<{ accessToken: string }> {
-    if (this.users.has(email)) {
+    const existing = await this.prisma.user.findUnique({ where: { email } });
+    if (existing) {
       throw new ConflictException('Email already exists');
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
-    this.users.set(email, { email, passwordHash });
+    const user = await this.prisma.user.create({
+      data: { email, passwordHash },
+    });
+
+    await this.prisma.walletBalance.createMany({
+      data: DEFAULT_BALANCES.map((b) => ({
+        userId: user.id,
+        asset: b.asset,
+        available: b.available,
+        locked: 0,
+      })),
+    });
 
     return this.signToken(email);
   }
@@ -35,7 +45,7 @@ export class AuthService {
     email: string,
     password: string,
   ): Promise<{ accessToken: string }> {
-    const user = this.users.get(email);
+    const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
