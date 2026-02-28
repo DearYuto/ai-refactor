@@ -13,6 +13,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { MARKET_SOURCE, type MarketSource } from "@/lib/api/market.types";
 import { useMarketData } from "@/lib/hooks/useMarketData";
 import { useMarketSocket } from "@/lib/hooks/useMarketSocket";
+import { useTrades } from "@/lib/hooks/useTrades";
 
 const marketTheme: React.CSSProperties = {
   "--color-bg-main": "#0b1220",
@@ -31,8 +32,14 @@ export default function MarketPage() {
   const [source, setSource] = useState<MarketSource>(MARKET_SOURCE.BINANCE);
   const socketStatus = useMarketSocket(source);
   const enablePolling = socketStatus !== "connected";
-  const { ticker, orderbook, trades, isLoading, error, lastUpdated } =
+  const { ticker, orderbook, isLoading, error, lastUpdated } =
     useMarketData(source, enablePolling);
+
+  const {
+    trades,
+    isLoading: tradesLoading,
+    error: tradesError,
+  } = useTrades(source);
 
   return (
     <PageShell style={marketTheme}>
@@ -77,8 +84,8 @@ export default function MarketPage() {
 
         <TradeTapeSection
           trades={trades}
-          isLoading={isLoading}
-          error={error}
+          isLoading={tradesLoading}
+          error={tradesError}
           source={source}
         />
       </main>
