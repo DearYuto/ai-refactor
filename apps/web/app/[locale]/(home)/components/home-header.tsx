@@ -4,12 +4,15 @@ import type { ChangeEvent } from "react";
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
+import { NotificationsDropdown } from "@/components/notifications-dropdown";
+import { useAuthStore } from "@/lib/store";
 
 export const HomeHeader = () => {
   const t = useTranslations("home");
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
 
   const handleLocaleChange = (event: ChangeEvent<HTMLSelectElement>) => {
     const nextLocale = event.target.value;
@@ -57,6 +60,7 @@ export const HomeHeader = () => {
             <option value="en">{t("header.languageEnglish")}</option>
           </select>
         </div>
+        {isLoggedIn && <NotificationsDropdown />}
         <Link
           className="rounded-full border border-[var(--color-border-strong)] bg-[var(--color-surface)] px-4 py-2 text-sm font-medium text-[var(--color-text-main)] transition hover:border-[var(--color-brand-500)]"
           href="/market"

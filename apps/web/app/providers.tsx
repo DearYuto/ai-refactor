@@ -5,6 +5,8 @@ import { Agentation } from "agentation";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { isRetryableError } from "@/lib/errors/error-messages";
+import { NotificationsProvider } from "@/components/notifications-provider";
+import { Toaster } from "sonner";
 
 type ProvidersProps = {
   children: ReactNode;
@@ -43,8 +45,11 @@ export default function Providers({ children }: ProvidersProps) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {children}
-      {process.env.NODE_ENV === "development" && <Agentation />}
+      <NotificationsProvider>
+        {children}
+        {process.env.NODE_ENV === "development" && <Agentation />}
+        <Toaster position="top-right" />
+      </NotificationsProvider>
     </QueryClientProvider>
   );
 }
