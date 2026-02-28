@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { FeeService } from '../fee/fee.service';
 import { WalletService } from '../wallet/wallet.service';
+import { LoggerService } from '../common/logger/logger.service';
 
 /**
  * 주문 매칭 엔진 서비스
@@ -20,6 +21,7 @@ export class MatchingEngineService {
     private readonly prisma: PrismaService,
     private readonly feeService: FeeService,
     private readonly walletService: WalletService,
+    private readonly customLogger: LoggerService,
   ) {}
 
   /**
@@ -68,7 +70,11 @@ export class MatchingEngineService {
       for (const sellOrder of sellOrders) {
         // 가격이 겹치는지 확인
         // buy 가격 >= sell 가격이면 매칭 가능
-        if (buyOrder.price !== null && sellOrder.price !== null && buyOrder.price >= sellOrder.price) {
+        if (
+          buyOrder.price !== null &&
+          sellOrder.price !== null &&
+          buyOrder.price >= sellOrder.price
+        ) {
           await this.executeTrade(buyOrder, sellOrder);
           matchCount++;
           break; // 이번 buy 주문은 처리 완료
@@ -179,6 +185,14 @@ export class MatchingEngineService {
 
         this.logger.log(
           `✅ 거래 체결 완료: Trade ${trade.id} - ${executionSize} @ ${executionPrice} (수수료: B=${buyerFee}, S=${sellerFee})`,
+        );
+
+        // Winston 로거를 통한 구조화된 로깅
+        this.customLogger.logTrade(
+          buyOrder.id,
+          sellOrder.id,
+          executionPrice,
+          executionSize,
         );
       });
     } catch (error) {

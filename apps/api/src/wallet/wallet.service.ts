@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
+import { Prisma } from '@repo/database';
 
 type WalletBalanceRecord = {
   asset: string;
@@ -10,6 +11,32 @@ type WalletBalanceRecord = {
 @Injectable()
 export class WalletService {
   constructor(private readonly prisma: PrismaService) {}
+
+  /**
+   * 트랜잭션 로그 기록 헬퍼 메서드
+   */
+  private async logTransaction(
+    tx: Prisma.TransactionClient,
+    userId: string,
+    type: string,
+    asset: string,
+    amount: number,
+    balanceBefore: number,
+    balanceAfter: number,
+    relatedId?: string,
+  ): Promise<void> {
+    await tx.transaction.create({
+      data: {
+        userId,
+        type,
+        asset,
+        amount,
+        balanceBefore,
+        balanceAfter,
+        relatedId,
+      },
+    });
+  }
 
   async getBalances(email: string): Promise<WalletBalanceRecord[]> {
     const user = await this.prisma.user.findUnique({
@@ -56,6 +83,9 @@ export class WalletService {
         throw new BadRequestException('Insufficient balance');
       }
 
+      const debitBefore = debitBalance.available;
+      const creditBefore = creditBalance.available;
+
       await tx.walletBalance.update({
         where: { userId_asset: { userId: user.id, asset: debit.asset } },
         data: { available: { decrement: debit.amount } },
@@ -64,6 +94,26 @@ export class WalletService {
         where: { userId_asset: { userId: user.id, asset: credit.asset } },
         data: { available: { increment: credit.amount } },
       });
+
+      // 트랜잭션 로그 기록
+      await this.logTransaction(
+        tx,
+        user.id,
+        'TRADE_SELL',
+        debit.asset,
+        -debit.amount,
+        debitBefore,
+        debitBefore - debit.amount,
+      );
+      await this.logTransaction(
+        tx,
+        user.id,
+        'TRADE_BUY',
+        credit.asset,
+        credit.amount,
+        creditBefore,
+        creditBefore + credit.amount,
+      );
     });
   }
 
@@ -85,6 +135,9 @@ export class WalletService {
       if (balance.available < amount) {
         throw new BadRequestException('Insufficient balance');
       }
+
+      const availableBefore = balance.available;
+
       await tx.walletBalance.update({
         where: { userId_asset: { userId, asset } },
         data: {
@@ -92,6 +145,17 @@ export class WalletService {
           locked: { increment: amount },
         },
       });
+
+      // 트랜잭션 로그 기록
+      await this.logTransaction(
+        tx,
+        userId,
+        'LOCK',
+        asset,
+        -amount,
+        availableBefore,
+        availableBefore - amount,
+      );
     });
   }
 
@@ -103,12 +167,34 @@ export class WalletService {
     asset: string,
     amount: number,
   ): Promise<void> {
-    await this.prisma.walletBalance.update({
-      where: { userId_asset: { userId, asset } },
-      data: {
-        locked: { decrement: amount },
-        available: { increment: amount },
-      },
+    await this.prisma.$transaction(async (tx) => {
+      const balance = await tx.walletBalance.findUnique({
+        where: { userId_asset: { userId, asset } },
+      });
+      if (!balance) {
+        throw new BadRequestException('Unsupported asset');
+      }
+
+      const availableBefore = balance.available;
+
+      await tx.walletBalance.update({
+        where: { userId_asset: { userId, asset } },
+        data: {
+          locked: { decrement: amount },
+          available: { increment: amount },
+        },
+      });
+
+      // 트랜잭션 로그 기록
+      await this.logTransaction(
+        tx,
+        userId,
+        'UNLOCK',
+        asset,
+        amount,
+        availableBefore,
+        availableBefore + amount,
+      );
     });
   }
 
@@ -148,11 +234,33 @@ export class WalletService {
     asset: string,
     amount: number,
   ): Promise<void> {
-    await this.prisma.walletBalance.update({
-      where: { userId_asset: { userId, asset } },
-      data: {
-        available: { increment: amount },
-      },
+    await this.prisma.$transaction(async (tx) => {
+      const balance = await tx.walletBalance.findUnique({
+        where: { userId_asset: { userId, asset } },
+      });
+      if (!balance) {
+        throw new BadRequestException('Unsupported asset');
+      }
+
+      const availableBefore = balance.available;
+
+      await tx.walletBalance.update({
+        where: { userId_asset: { userId, asset } },
+        data: {
+          available: { increment: amount },
+        },
+      });
+
+      // 트랜잭션 로그 기록
+      await this.logTransaction(
+        tx,
+        userId,
+        'DEPOSIT',
+        asset,
+        amount,
+        availableBefore,
+        availableBefore + amount,
+      );
     });
   }
 }

@@ -8,12 +8,14 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '../auth/auth.guard';
 import { AuthRequest } from '../common/types/auth-request.type';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrdersService } from './orders.service';
 
 @Controller('orders')
+@Throttle({ default: { limit: 20, ttl: 60000 } }) // 60초당 20회
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 

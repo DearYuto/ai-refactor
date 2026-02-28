@@ -28,6 +28,7 @@
     "@nestjs/platform-socket.io": "^11.1.13",
     "@nestjs/schedule": "^4.0.0",
     "@nestjs/swagger": "^11.0.0",
+    "@nestjs/throttler": "^6.5.0",
     "@nestjs/websockets": "^11.1.13",
     "@repo/database": "workspace:*",
     "@repo/types": "workspace:*",
@@ -37,7 +38,9 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "socket.io": "^4.8.3",
-    "socket.io-adapter": "^2.5.6"
+    "socket.io-adapter": "^2.5.6",
+    "winston": "^3.19.0",
+    "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

@@ -10,6 +10,7 @@ import {
 import { PrismaService } from '../database/prisma.service';
 import { MarketStreamService } from '../market/market.stream.service';
 import { WalletService } from '../wallet/wallet.service';
+import { LoggerService } from '../common/logger/logger.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 
 type OrderSide = 'buy' | 'sell';
@@ -68,6 +69,7 @@ export class OrdersService {
     private readonly marketStreamService: MarketStreamService,
     private readonly walletService: WalletService,
     private readonly prisma: PrismaService,
+    private readonly logger: LoggerService,
   ) {}
 
   async getOrders(email: string): Promise<OrderRecord[]> {
@@ -152,6 +154,15 @@ export class OrdersService {
       where: { id: orderId },
       data: { status: 'cancelled' },
     });
+
+    this.logger.logOrder('cancel', user.id, orderId, {
+      side: order.side,
+      type: order.type,
+      size: order.size,
+      price: order.price,
+      source: order.source,
+    });
+
     return toOrderRecord(updated);
   }
 
@@ -195,6 +206,16 @@ export class OrdersService {
         status: 'filled',
       },
     });
+
+    this.logger.logOrder('create', userId, row.id, {
+      side,
+      type: 'market',
+      size,
+      price,
+      source,
+      status: 'filled',
+    });
+
     return toOrderRecord(row);
   }
 
@@ -247,6 +268,17 @@ export class OrdersService {
           status: 'filled',
         },
       });
+
+      this.logger.logOrder('create', userId, row.id, {
+        side,
+        type: 'limit',
+        size,
+        limitPrice,
+        filledPrice,
+        source,
+        status: 'filled',
+      });
+
       return toOrderRecord(row);
     }
 
@@ -263,6 +295,16 @@ export class OrdersService {
         status: 'open',
       },
     });
+
+    this.logger.logOrder('create', userId, row.id, {
+      side,
+      type: 'limit',
+      size,
+      limitPrice,
+      source,
+      status: 'open',
+    });
+
     return toOrderRecord(row);
   }
 }

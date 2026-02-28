@@ -14,6 +14,7 @@ model User {
   createdAt    DateTime        @default(now())
   orders       Order[]
   balances     WalletBalance[]
+  transactions Transaction[]
 }
 
 model Order {
@@ -76,4 +77,20 @@ model Fee {
   takerFee  Float    @default(0.002)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Transaction {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  type          String   // DEPOSIT, WITHDRAW, TRADE_BUY, TRADE_SELL, FEE, LOCK, UNLOCK
+  amount        Float
+  asset         String
+  balanceBefore Float
+  balanceAfter  Float
+  relatedId     String?  // Order ID or Trade ID
+  timestamp     DateTime @default(now())
+
+  @@index([userId, timestamp])
+  @@index([userId, asset, timestamp])
 }
