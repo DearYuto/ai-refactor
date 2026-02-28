@@ -139,4 +139,20 @@ export class WalletService {
     }
     return user.id;
   }
+
+  /**
+   * Add balance to user's available funds (used in matching engine).
+   */
+  async addBalance(
+    userId: string,
+    asset: string,
+    amount: number,
+  ): Promise<void> {
+    await this.prisma.walletBalance.update({
+      where: { userId_asset: { userId, asset } },
+      data: {
+        available: { increment: amount },
+      },
+    });
+  }
 }

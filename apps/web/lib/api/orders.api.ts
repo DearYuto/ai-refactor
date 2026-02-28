@@ -17,6 +17,7 @@ export type OrderRecord = {
   price: number | null;
   filledPrice: number | null;
   notional: number | null;
+  fee: number | null;
   source: MarketSource;
   baseAsset: string;
   quoteAsset: string;

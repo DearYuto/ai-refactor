@@ -37,6 +37,9 @@ const STATUS_BADGE: Record<string, string> = {
 
 const RATIO_STEPS = [25, 50, 75, 100] as const;
 
+const MAKER_FEE_RATE = 0.001;
+const TAKER_FEE_RATE = 0.002;
+
 type OrderTab = "open" | "history";
 
 export const OrderEntrySection = ({
@@ -83,6 +86,9 @@ export const OrderEntrySection = ({
     (Number.isFinite(parsedLimitPrice) && parsedLimitPrice > 0);
 
   const estimatedTotal = sizeIsValid ? parsedSize * effectivePrice : 0;
+
+  const feeRate = orderType === "market" ? TAKER_FEE_RATE : MAKER_FEE_RATE;
+  const estimatedFee = sizeIsValid ? parsedSize * feeRate : 0;
 
   const insufficientBalance =
     sizeIsValid &&
@@ -296,6 +302,18 @@ export const OrderEntrySection = ({
           </span>
         </div>
 
+        {/* 예상 수수료 */}
+        <div className="flex items-center justify-between text-xs text-[var(--color-text-sub)]">
+          <span>
+            Est. Fee ({orderType === "market" ? "Taker" : "Maker"} {(feeRate * 100).toFixed(1)}%)
+          </span>
+          <span>
+            {sizeIsValid
+              ? `${formatValue(estimatedFee, 6)} ${baseAsset}`
+              : "--"}
+          </span>
+        </div>
+
         {/* 잔고 */}
         <div className="flex items-center justify-between text-xs text-[var(--color-text-sub)]">
           <span>Available</span>
@@ -432,6 +450,15 @@ export const OrderEntrySection = ({
                     <span>Total</span>
                     <span>
                       {formatValue(order.notional, 2)} {order.quoteAsset}
+                    </span>
+                  </div>
+                )}
+
+                {order.fee !== null && order.status === "filled" && (
+                  <div className="flex items-center justify-between">
+                    <span>Fee</span>
+                    <span className="text-amber-400">
+                      {formatValue(order.fee, 6)} {order.baseAsset}
                     </span>
                   </div>
                 )}

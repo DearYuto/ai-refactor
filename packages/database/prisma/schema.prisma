@@ -32,6 +32,12 @@ model Order {
   status      String   @default("pending")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  buyTrades   Trade[]  @relation("BuyOrder")
+  sellTrades  Trade[]  @relation("SellOrder")
+
+  @@index([userId, status])
+  @@index([source, status, side])
 }
 
 model WalletBalance {
@@ -45,4 +51,29 @@ model WalletBalance {
   updatedAt DateTime @updatedAt
 
   @@unique([userId, asset])
+}
+
+model Trade {
+  id          String   @id @default(cuid())
+  buyOrderId  String
+  buyOrder    Order    @relation("BuyOrder", fields: [buyOrderId], references: [id])
+  sellOrderId String
+  sellOrder   Order    @relation("SellOrder", fields: [sellOrderId], references: [id])
+  price       Float
+  size        Float
+  buyerFee    Float
+  sellerFee   Float
+  source      String
+  timestamp   DateTime @default(now())
+
+  @@index([source, timestamp])
+}
+
+model Fee {
+  id        String   @id @default(cuid())
+  asset     String   @unique
+  makerFee  Float    @default(0.001)
+  takerFee  Float    @default(0.002)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
