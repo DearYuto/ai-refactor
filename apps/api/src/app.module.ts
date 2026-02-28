@@ -11,6 +11,7 @@ import { MatchingModule } from './matching/matching.module';
 import { TradesModule } from './trades/trades.module';
 import { DepositsModule } from './deposits/deposits.module';
 import { WithdrawalsModule } from './withdrawals/withdrawals.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import { LoggerModule } from './common/logger/logger.module';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import { AppController } from './app.controller';
@@ -40,6 +41,7 @@ import { DatabaseModule } from './database/database.module';
     TradesModule,
     DepositsModule,
     WithdrawalsModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [

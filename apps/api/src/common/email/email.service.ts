@@ -101,4 +101,64 @@ export class EmailService {
 
     return info;
   }
+
+  async sendOrderFilledEmail(
+    to: string,
+    side: string,
+    size: number,
+    price: number,
+    asset: string,
+  ) {
+    const info = await this.transporter.sendMail({
+      from: '"CryptoExchange" <noreply@cryptoexchange.com>',
+      to,
+      subject: '주문 체결 완료',
+      html: `
+        <h1>주문이 체결되었습니다</h1>
+        <p><strong>${side === 'buy' ? '매수' : '매도'}</strong> 주문이 체결되었습니다:</p>
+        <ul>
+          <li>수량: ${size} ${asset}</li>
+          <li>가격: $${price}</li>
+          <li>총액: $${(size * price).toFixed(2)}</li>
+        </ul>
+      `,
+    });
+
+    this.logger.log(`주문 체결 이메일 발송: ${to}`, 'EmailService');
+    return info;
+  }
+
+  async sendDepositConfirmedEmail(to: string, amount: number, asset: string) {
+    const info = await this.transporter.sendMail({
+      from: '"CryptoExchange" <noreply@cryptoexchange.com>',
+      to,
+      subject: '입금 확인',
+      html: `
+        <h1>입금이 확인되었습니다</h1>
+        <p>${amount} ${asset} 입금이 확인되어 계정에 반영되었습니다.</p>
+      `,
+    });
+
+    this.logger.log(`입금 확인 이메일 발송: ${to}`, 'EmailService');
+    return info;
+  }
+
+  async sendWithdrawalCompletedEmail(
+    to: string,
+    amount: number,
+    asset: string,
+  ) {
+    const info = await this.transporter.sendMail({
+      from: '"CryptoExchange" <noreply@cryptoexchange.com>',
+      to,
+      subject: '출금 완료',
+      html: `
+        <h1>출금이 완료되었습니다</h1>
+        <p>${amount} ${asset} 출금이 완료되었습니다.</p>
+      `,
+    });
+
+    this.logger.log(`출금 완료 이메일 발송: ${to}`, 'EmailService');
+    return info;
+  }
 }

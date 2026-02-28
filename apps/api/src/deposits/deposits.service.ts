@@ -2,6 +2,8 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { PrismaService } from '../database/prisma.service';
 import { WalletService } from '../wallet/wallet.service';
 import { LoggerService } from '../common/logger/logger.service';
+import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationsGateway } from '../notifications/notifications.gateway';
 import { CreateDepositDto } from './dto/create-deposit.dto';
 
 @Injectable()
@@ -10,6 +12,8 @@ export class DepositsService {
     private readonly prisma: PrismaService,
     private readonly walletService: WalletService,
     private readonly logger: LoggerService,
+    private readonly notificationsService: NotificationsService,
+    private readonly notificationsGateway: NotificationsGateway,
   ) {}
 
   async getDeposits(email: string) {
@@ -60,6 +64,16 @@ export class DepositsService {
     });
 
     this.logger.log(`입금 확인 완료: ${depositId} - ${deposit.amount} ${deposit.asset}`, 'DepositsService');
+
+    // 사용자에게 알림
+    const notification = await this.notificationsService.notifyDepositConfirmed(
+      deposit.userId,
+      depositId,
+      deposit.amount,
+      deposit.asset,
+    );
+    this.notificationsGateway.sendToUser(deposit.userId, notification);
+
     return updated;
   }
 }

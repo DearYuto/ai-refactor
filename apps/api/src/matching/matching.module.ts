@@ -6,6 +6,7 @@ import { DatabaseModule } from '../database/database.module';
 import { FeeModule } from '../fee/fee.module';
 import { WalletModule } from '../wallet/wallet.module';
 import { LoggerModule } from '../common/logger/logger.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { LoggerModule } from '../common/logger/logger.module';
     FeeModule,
     WalletModule,
     LoggerModule,
+    NotificationsModule,
   ],
   providers: [MatchingEngineService, MatchingScheduler],
   exports: [MatchingEngineService],

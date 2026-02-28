@@ -3,6 +3,8 @@ import { PrismaService } from '../database/prisma.service';
 import { FeeService } from '../fee/fee.service';
 import { WalletService } from '../wallet/wallet.service';
 import { LoggerService } from '../common/logger/logger.service';
+import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationsGateway } from '../notifications/notifications.gateway';
 
 /**
  * 주문 매칭 엔진 서비스
@@ -22,6 +24,8 @@ export class MatchingEngineService {
     private readonly feeService: FeeService,
     private readonly walletService: WalletService,
     private readonly customLogger: LoggerService,
+    private readonly notificationsService: NotificationsService,
+    private readonly notificationsGateway: NotificationsGateway,
   ) {}
 
   /**
@@ -194,6 +198,28 @@ export class MatchingEngineService {
           executionPrice,
           executionSize,
         );
+
+        // 매수자에게 알림
+        const buyNotification = await this.notificationsService.notifyOrderFilled(
+          buyOrder.userId,
+          buyOrder.id,
+          'buy',
+          executionSize,
+          executionPrice,
+          buyOrder.baseAsset,
+        );
+        this.notificationsGateway.sendToUser(buyOrder.userId, buyNotification);
+
+        // 매도자에게 알림
+        const sellNotification = await this.notificationsService.notifyOrderFilled(
+          sellOrder.userId,
+          sellOrder.id,
+          'sell',
+          executionSize,
+          executionPrice,
+          sellOrder.baseAsset,
+        );
+        this.notificationsGateway.sendToUser(sellOrder.userId, sellNotification);
       });
     } catch (error) {
       this.logger.error(`거래 체결 실패: ${error.message}`, error.stack);

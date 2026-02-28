@@ -2,6 +2,8 @@ import { Injectable, BadRequestException, NotFoundException } from '@nestjs/comm
 import { PrismaService } from '../database/prisma.service';
 import { WalletService } from '../wallet/wallet.service';
 import { LoggerService } from '../common/logger/logger.service';
+import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationsGateway } from '../notifications/notifications.gateway';
 import { CreateWithdrawalDto } from './dto/create-withdrawal.dto';
 
 // 출금 수수료 (자산별)
@@ -31,6 +33,8 @@ export class WithdrawalsService {
     private readonly prisma: PrismaService,
     private readonly walletService: WalletService,
     private readonly logger: LoggerService,
+    private readonly notificationsService: NotificationsService,
+    private readonly notificationsGateway: NotificationsGateway,
   ) {}
 
   async getWithdrawals(email: string) {
@@ -135,6 +139,15 @@ export class WithdrawalsService {
         },
       });
       this.logger.log(`출금 완료: ${withdrawalId}`, 'WithdrawalsService');
+
+      // 사용자에게 알림
+      const notification = await this.notificationsService.notifyWithdrawalCompleted(
+        withdrawal.userId,
+        withdrawalId,
+        withdrawal.amount,
+        withdrawal.asset,
+      );
+      this.notificationsGateway.sendToUser(withdrawal.userId, notification);
     }, 5000); // 5초 후 완료 (시뮬레이션)
 
     return updated;
