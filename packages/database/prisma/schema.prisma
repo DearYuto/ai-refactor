@@ -11,6 +11,7 @@ model User {
   id                String               @id @default(cuid())
   email             String               @unique
   passwordHash      String
+  role              String               @default("USER") // USER, ADMIN
   emailVerified     Boolean              @default(false)
   emailVerifiedAt   DateTime?
   twoFactorEnabled  Boolean              @default(false)
@@ -110,7 +111,7 @@ model Deposit {
   user          User     @relation(fields: [userId], references: [id])
   asset         String   // BTC, USDT, KRW
   amount        Float
-  txHash        String?  // 블록체인 트랜잭션 해시 (실제 입금 시)
+  txHash        String?  @unique // 블록체인 트랜잭션 해시 (실제 입금 시) - 중복 방지
   status        String   @default("pending") // pending, confirmed, failed
   confirmations Int      @default(0) // 블록체인 확인 횟수
   createdAt     DateTime @default(now())
@@ -177,4 +178,23 @@ model Notification {
 
   @@index([userId, read])
   @@index([userId, createdAt])
+}
+
+model WithdrawalLimit {
+  id         String   @id @default(cuid())
+  asset      String   @unique
+  dailyLimit Decimal  @db.Decimal(20, 8)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model WithdrawalFee {
+  id         String   @id @default(cuid())
+  asset      String   @unique
+  baseFee    Decimal  @db.Decimal(20, 8)
+  networkFee Decimal? @db.Decimal(20, 8)
+  minFee     Decimal  @db.Decimal(20, 8)
+  maxFee     Decimal  @db.Decimal(20, 8)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
