@@ -97,14 +97,137 @@ export function TwoFactorSection() {
    * 텍스트 파일로 저장합니다
    */
   const downloadBackupCodes = () => {
-    const text = backupCodes.join("\n");
-    const blob = new Blob([text], { type: "text/plain" });
+    const content = `
+암호화폐 거래소 2FA 백업 코드
+생성 날짜: ${new Date().toLocaleString('ko-KR')}
+이메일: ${user?.email || ''}
+
+백업 코드:
+${backupCodes.map((code, i) => `${i + 1}. ${code}`).join('\n')}
+
+⚠️ 이 코드는 안전한 곳에 보관하세요.
+⚠️ 타인에게 노출되지 않도록 주의하세요.
+⚠️ 각 코드는 한 번만 사용할 수 있습니다.
+    `.trim();
+
+    const blob = new Blob([content], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "backup-codes.txt";
+    a.download = `backup-codes-${Date.now()}.txt`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  /**
+   * 백업 코드 인쇄
+   * 새 창에서 인쇄 대화상자를 엽니다
+   */
+  const printBackupCodes = () => {
+    const printWindow = window.open('', '', 'width=800,height=600');
+    if (!printWindow) {
+      alert('팝업이 차단되었습니다. 팝업 차단을 해제하고 다시 시도하세요.');
+      return;
+    }
+
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>2FA 백업 코드</title>
+        <style>
+          body {
+            font-family: 'Malgun Gothic', sans-serif;
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+          }
+          h1 {
+            text-align: center;
+            color: #1f2937;
+            margin-bottom: 10px;
+          }
+          .meta {
+            text-align: center;
+            color: #6b7280;
+            margin-bottom: 30px;
+            font-size: 14px;
+          }
+          .codes {
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+          }
+          .code {
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            margin: 12px 0;
+            padding: 8px;
+            background: white;
+            border-radius: 4px;
+          }
+          .warning {
+            background: #fef2f2;
+            border: 2px solid #fecaca;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 30px;
+            color: #991b1b;
+          }
+          .warning-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+          }
+          .warning ul {
+            margin: 10px 0;
+            padding-left: 20px;
+          }
+          .warning li {
+            margin: 5px 0;
+          }
+          @media print {
+            body { padding: 20px; }
+            .no-print { display: none; }
+          }
+        </style>
+      </head>
+      <body>
+        <h1>🔐 암호화폐 거래소 2FA 백업 코드</h1>
+        <div class="meta">
+          <p><strong>생성 날짜:</strong> ${new Date().toLocaleString('ko-KR')}</p>
+          <p><strong>이메일:</strong> ${user?.email || ''}</p>
+        </div>
+
+        <div class="codes">
+          <h3 style="margin-top: 0; color: #374151;">백업 코드</h3>
+          ${backupCodes.map((code, i) => `
+            <div class="code">${i + 1}. ${code}</div>
+          `).join('')}
+        </div>
+
+        <div class="warning">
+          <div class="warning-title">⚠️ 중요 안내사항</div>
+          <ul>
+            <li>이 코드는 안전한 곳에 보관하세요.</li>
+            <li>타인에게 노출되지 않도록 주의하세요.</li>
+            <li>각 코드는 한 번만 사용할 수 있습니다.</li>
+            <li>2FA 앱을 사용할 수 없을 때 로그인 시 사용할 수 있습니다.</li>
+          </ul>
+        </div>
+
+        <script>
+          window.onload = () => {
+            window.print();
+          };
+        </script>
+      </body>
+      </html>
+    `;
+
+    printWindow.document.write(printContent);
+    printWindow.document.close();
   };
 
   return (
@@ -195,12 +318,20 @@ export function TwoFactorSection() {
                   <div key={i}>{code}</div>
                 ))}
               </div>
-              <button
-                onClick={downloadBackupCodes}
-                className="mt-2 bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
-              >
-                백업 코드 다운로드
-              </button>
+              <div className="mt-3 flex gap-2">
+                <button
+                  onClick={downloadBackupCodes}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
+                >
+                  💾 백업 코드 다운로드
+                </button>
+                <button
+                  onClick={printBackupCodes}
+                  className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded text-sm hover:bg-gray-200"
+                >
+                  🖨️ 백업 코드 인쇄
+                </button>
+              </div>
             </div>
           )}
 

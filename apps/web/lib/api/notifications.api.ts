@@ -1,4 +1,4 @@
-import { customFetch } from './client';
+import { customFetch } from '@/lib/api/fetcher';
 
 export interface Notification {
   id: string;
@@ -14,26 +14,28 @@ export interface Notification {
 export async function fetchNotifications(
   token: string,
 ): Promise<Notification[]> {
-  return customFetch('/notifications', {
+  const response = await customFetch<{ data: Notification[]; status: number; headers: Headers }>('/notifications', {
     headers: {
       Authorization: `Bearer ${token}`,
     },
   });
+  return response.data;
 }
 
 export async function getUnreadCount(token: string): Promise<{ count: number }> {
-  return customFetch('/notifications/unread-count', {
+  const response = await customFetch<{ data: { count: number }; status: number; headers: Headers }>('/notifications/unread-count', {
     headers: {
       Authorization: `Bearer ${token}`,
     },
   });
+  return response.data;
 }
 
 export async function markAsRead(
   token: string,
   notificationId: string,
 ): Promise<void> {
-  return customFetch(`/notifications/${notificationId}/read`, {
+  await customFetch<{ data: unknown; status: number; headers: Headers }>(`/notifications/${notificationId}/read`, {
     method: 'PATCH',
     headers: {
       Authorization: `Bearer ${token}`,
@@ -42,7 +44,7 @@ export async function markAsRead(
 }
 
 export async function markAllAsRead(token: string): Promise<void> {
-  return customFetch('/notifications/read-all', {
+  await customFetch<{ data: unknown; status: number; headers: Headers }>('/notifications/read-all', {
     method: 'PATCH',
     headers: {
       Authorization: `Bearer ${token}`,

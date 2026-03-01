@@ -5,6 +5,16 @@ import { useAuthStore, useNotificationStore } from '@/lib/store';
 import { markAsRead, markAllAsRead } from '@/lib/api/notifications.api';
 import { getSocket } from '@/lib/socket';
 
+// 알림 타입별 아이콘 매핑
+const NOTIFICATION_ICONS: Record<string, string> = {
+  ORDER_FILLED: '📊',        // 주문 체결
+  DEPOSIT_CONFIRMED: '💰',   // 입금 확인
+  WITHDRAWAL_COMPLETED: '💸', // 출금 완료
+  WITHDRAWAL_APPROVED: '✅',  // 출금 승인
+  WITHDRAWAL_REJECTED: '❌',  // 출금 거부
+  SYSTEM: '🔔',              // 시스템 알림 (기본값)
+};
+
 export function NotificationsDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const token = useAuthStore((state) => state.token);
@@ -100,7 +110,7 @@ export function NotificationsDropdown() {
               notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className={`p-4 border-b hover:bg-gray-50 cursor-pointer ${
+                  className={`p-4 border-b hover:bg-gray-50 cursor-pointer transition-colors ${
                     !notification.read ? 'bg-blue-50' : ''
                   }`}
                   onClick={() => {
@@ -109,7 +119,16 @@ export function NotificationsDropdown() {
                     }
                   }}
                 >
-                  <div className="flex items-start justify-between">
+                  <div className="flex items-start gap-3">
+                    {/* 타입별 아이콘 */}
+                    <span
+                      className={`text-2xl ${
+                        !notification.read ? 'animate-pulse' : ''
+                      }`}
+                    >
+                      {NOTIFICATION_ICONS[notification.type] || '🔔'}
+                    </span>
+
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <h4 className="font-semibold">{notification.title}</h4>

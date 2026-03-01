@@ -22,6 +22,7 @@ export interface CreateDepositDto {
   asset: "BTC" | "USDT" | "KRW";
   amount: number;
   txHash?: string;
+  fromAddress?: string; // 보내는 주소 (선택사항, 백엔드에서 검증)
 }
 
 type FetchResponse<TData> = {

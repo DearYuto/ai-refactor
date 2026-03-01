@@ -30,6 +30,7 @@ export interface CreateWithdrawalDto {
   asset: "BTC" | "USDT" | "KRW";
   amount: number;
   toAddress: string;
+  twoFactorToken: string; // 2FA 코드 (필수)
 }
 
 type FetchResponse<TData> = {
