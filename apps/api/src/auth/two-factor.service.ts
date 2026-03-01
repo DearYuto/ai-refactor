@@ -5,8 +5,10 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { LoggerService } from '../common/logger/logger.service';
+import { EncryptionService } from '../common/encryption/encryption.service';
 import * as speakeasy from 'speakeasy';
 import * as qrcode from 'qrcode';
+import * as bcrypt from 'bcryptjs';
 import { randomBytes } from 'crypto';
 
 @Injectable()
@@ -14,6 +16,7 @@ export class TwoFactorService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly logger: LoggerService,
+    private readonly encryption: EncryptionService,
   ) {}
 
   async generateSecret(email: string) {
@@ -30,10 +33,13 @@ export class TwoFactorService {
       length: 32,
     });
 
+    // 🔒 CRITICAL SECURITY: 2FA secret 암호화 저장
+    const encryptedSecret = this.encryption.encrypt(secret.base32);
+
     // 임시로 저장 (활성화 전)
     await this.prisma.user.update({
       where: { id: user.id },
-      data: { twoFactorSecret: secret.base32 },
+      data: { twoFactorSecret: encryptedSecret },
     });
 
     // QR 코드 생성
@@ -53,9 +59,12 @@ export class TwoFactorService {
       throw new BadRequestException('2FA setup not initiated');
     }
 
+    // 🔒 암호화된 secret 복호화
+    const decryptedSecret = this.encryption.decrypt(user.twoFactorSecret);
+
     // 토큰 검증
     const verified = speakeasy.totp.verify({
-      secret: user.twoFactorSecret,
+      secret: decryptedSecret,
       encoding: 'base32',
       token,
       window: 2, // 시간 오차 허용 (±1분)
@@ -65,8 +74,11 @@ export class TwoFactorService {
       throw new BadRequestException('Invalid 2FA code');
     }
 
-    // 백업 코드 생성
+    // 🔒 CRITICAL SECURITY: 백업 코드 생성 및 해싱
     const backupCodes = this.generateBackupCodesArray();
+    const hashedBackupCodes = await Promise.all(
+      backupCodes.map((code) => bcrypt.hash(code, 10))
+    );
 
     await this.prisma.$transaction([
       // 2FA 활성화
@@ -74,12 +86,12 @@ export class TwoFactorService {
         where: { id: user.id },
         data: { twoFactorEnabled: true },
       }),
-      // 백업 코드 저장
-      ...backupCodes.map((code) =>
+      // 백업 코드 해시 저장 (평문은 저장하지 않음)
+      ...hashedBackupCodes.map((hashedCode) =>
         this.prisma.backupCode.create({
           data: {
             userId: user.id,
-            code,
+            code: hashedCode, // bcrypt 해시 저장
           },
         }),
       ),
@@ -99,9 +111,12 @@ export class TwoFactorService {
       throw new BadRequestException('2FA not enabled');
     }
 
+    // 🔒 암호화된 secret 복호화
+    const decryptedSecret = this.encryption.decrypt(user.twoFactorSecret);
+
     // 토큰 검증 (또는 백업 코드)
     const isValidToken = speakeasy.totp.verify({
-      secret: user.twoFactorSecret,
+      secret: decryptedSecret,
       encoding: 'base32',
       token,
       window: 2,
@@ -138,9 +153,12 @@ export class TwoFactorService {
       return false;
     }
 
+    // 🔒 암호화된 secret 복호화
+    const decryptedSecret = this.encryption.decrypt(user.twoFactorSecret);
+
     // 일반 TOTP 토큰 검증
     const isValidToken = speakeasy.totp.verify({
-      secret: user.twoFactorSecret,
+      secret: decryptedSecret,
       encoding: 'base32',
       token,
       window: 2,
@@ -156,28 +174,36 @@ export class TwoFactorService {
     userId: string,
     code: string,
   ): Promise<boolean> {
-    const backupCode = await this.prisma.backupCode.findFirst({
+    // 🔒 CRITICAL SECURITY: 백업 코드는 해시로 저장되므로 모든 코드를 조회 후 bcrypt 비교
+    const backupCodes = await this.prisma.backupCode.findMany({
       where: {
         userId,
-        code,
         used: false,
       },
     });
 
-    if (!backupCode) return false;
+    if (backupCodes.length === 0) return false;
 
-    // 백업 코드 사용 처리
-    await this.prisma.backupCode.update({
-      where: { id: backupCode.id },
-      data: {
-        used: true,
-        usedAt: new Date(),
-      },
-    });
+    // 입력된 코드와 해시된 백업 코드 비교
+    for (const backupCode of backupCodes) {
+      const isValid = await bcrypt.compare(code, backupCode.code);
 
-    this.logger.log(`백업 코드 사용: ${userId}`, 'TwoFactorService');
+      if (isValid) {
+        // 백업 코드 사용 처리
+        await this.prisma.backupCode.update({
+          where: { id: backupCode.id },
+          data: {
+            used: true,
+            usedAt: new Date(),
+          },
+        });
 
-    return true;
+        this.logger.log(`백업 코드 사용: ${userId}`, 'TwoFactorService');
+        return true;
+      }
+    }
+
+    return false;
   }
 
   async getBackupCodes(email: string) {
@@ -207,14 +233,18 @@ export class TwoFactorService {
       where: { userId: user.id },
     });
 
-    // 새 백업 코드 생성
+    // 🔒 CRITICAL SECURITY: 새 백업 코드 생성 및 해싱
     const backupCodes = this.generateBackupCodesArray();
+    const hashedBackupCodes = await Promise.all(
+      backupCodes.map((code) => bcrypt.hash(code, 10))
+    );
+
     await Promise.all(
-      backupCodes.map((code) =>
+      hashedBackupCodes.map((hashedCode) =>
         this.prisma.backupCode.create({
           data: {
             userId: user.id,
-            code,
+            code: hashedCode, // bcrypt 해시 저장
           },
         }),
       ),

@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Body, Param, Req, UseGuards } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '../auth/auth.guard';
+import { AdminGuard } from '../auth/guards/admin.guard';
 import { AuthRequest } from '../common/types/auth-request.type';
 import { WithdrawalsService } from './withdrawals.service';
 import { CreateWithdrawalDto } from './dto/create-withdrawal.dto';
@@ -27,16 +28,16 @@ export class WithdrawalsController {
     return this.withdrawalsService.requestWithdrawal(request.user.email, dto);
   }
 
-  // 출금 승인 (관리자용)
+  // 출금 승인 (관리자용) 🔒 CRITICAL SECURITY: AdminGuard 추가
   @Post(':id/approve')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AdminGuard)
   async approveWithdrawal(@Param('id') id: string) {
     return this.withdrawalsService.approveWithdrawal(id);
   }
 
-  // 출금 거부 (관리자용)
+  // 출금 거부 (관리자용) 🔒 CRITICAL SECURITY: AdminGuard 추가
   @Post(':id/reject')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AdminGuard)
   async rejectWithdrawal(
     @Param('id') id: string,
     @Body('reason') reason: string,

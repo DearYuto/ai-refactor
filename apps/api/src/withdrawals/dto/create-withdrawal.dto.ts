@@ -11,4 +11,7 @@ export class CreateWithdrawalDto {
 
   @IsString()
   toAddress: string; // 출금 주소
+
+  @IsString()
+  twoFactorToken: string; // 2FA 코드 (필수)
 }

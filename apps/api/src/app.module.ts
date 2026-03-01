@@ -13,6 +13,7 @@ import { DepositsModule } from './deposits/deposits.module';
 import { WithdrawalsModule } from './withdrawals/withdrawals.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { LoggerModule } from './common/logger/logger.module';
+import { EncryptionModule } from './common/encryption/encryption.module';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -32,6 +33,7 @@ import { DatabaseModule } from './database/database.module';
     ]),
     LoggerModule,
     DatabaseModule,
+    EncryptionModule, // 🔒 전역 암호화 서비스
     AuthModule,
     WalletModule,
     MarketModule,
